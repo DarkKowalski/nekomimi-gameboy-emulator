@@ -13,7 +13,7 @@ void Memory::set_memory_byte(uint16_t address, uint8_t byte)
     memory_byte[address] = byte;
 }
 
-// Getter and setter fot memory (16-bit version)
+// Getter and setter for memory (16-bit version)
 // Used with 16-bit registers
 // Little Endian
 uint16_t Memory::get_memory_word(uint16_t address)
