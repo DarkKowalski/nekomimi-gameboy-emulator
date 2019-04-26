@@ -1,10 +1,23 @@
 # Nekomimi GameBoy Emulator Dev Doc
 
+## Hardware
+| Real GameBoy                  | Emulator                |
+| :-----------                  | :-------                |
+| CPU: Sharp LR35902            | src/cpu & src/register  |
+| PPU (Picture Processing Unit) | src/gpu                 |
+| RAM & VRAM                    | src/memory & src/mmuint |
+| Joypad                        | src/joypad              |
+| Motherboard                   | src/motherboard         |
+| Serial                        | src/serial              |
+| Timer                         | src/timer               |
+| Cartridge                     | src/cartridge           |
+
 ## Naming
 | Namespace     | Prefix / Postfix        | Note                            |
 | :------------ |:----------------------- | :-------                        |
 | gameboy       | r_                      | register: A F B C D E H L SP PC |
 |               | f_                      | flag(F): Z N H C                |
+|               | alu_                    | Arithmetic Logic Unit operation |
 |               | _byte                   | 8-bit version                   |
 |               | _word                   | 16-bit version                  |
 
@@ -46,6 +59,17 @@ In this entire project, we define a WORD as 16 bits just like x86 and ARM, and a
 | 0xFF80 - 0xFFFE |       | High RAM (HRAM)                                        |
 | 0xFFFF          |       | Interrupt Enable Register (IE)                         |
 
+## System Clocks
+| Component | Speed                |
+|:--------- | :----                |
+| CPU       | 4 MHz (4,194,304 Hz) |
+| RAM       | 1 MHz (1,048,576 Hz) |
+| PPU       | 4 MHz (4,194,304 Hz) |
+| VRAM      | 2 MHz (2,097,152 Hz) |
+
+The whole system is memory bound, so it can only calculate as fast as memory which provides data
+
+In this project, when we use cycles, it means machine cycles at 1 MHz
 ## Reference
 [The Ultimate Game Boy Talk](https://youtu.be/HyzD8pNlpwI)
 
