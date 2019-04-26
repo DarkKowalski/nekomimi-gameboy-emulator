@@ -39,7 +39,7 @@ void register_test_debug_print()
 void register_test_power_on()
 {
 
-    test_register.power_on();
+    Register& ref_reg =  test_register.power_on();
 
     cout << "Registers power on and have been initialized." << endl;
     cout << "Layout:" << endl;
