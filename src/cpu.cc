@@ -1,16 +1,16 @@
 #include "cpu.h"
 using gameboy::Cpu;
-using gameboy::Memory;
-using gameboy::RegisterName;
-using gameboy::Register;
 using gameboy::FlagName;
+using gameboy::Memory;
+using gameboy::Register;
+using gameboy::RegisterName;
 
 // Stack operations
 void Cpu::stack_add(Memory &mem, uint16_t word)
 {
     // Add a new stack frame: 16 bits
     reg.register_word[RegisterName::r_sp] -= 2;
-    
+
     // Copy value: 16 bits
     mem.set_memory_word(reg.register_word[RegisterName::r_sp], word);
 }
@@ -49,7 +49,7 @@ uint16_t Cpu::read_opcode_word(Memory &mem)
 }
 
 // Initialize registers and flag status when power on
-Cpu& Cpu::power_on()
+Cpu &Cpu::power_on()
 {
     reg.power_on();
     f_halted = false;
@@ -156,7 +156,7 @@ uint8_t Cpu::execute(Memory &mem)
 
     // Handle opcode (8-bit)
     // If opcode has 16 bits (prefix-cb), continue to handle rest 8 bits
-    handle_opcode_main[opcode_main](mem);
+    handle_opcode_main[opcode_main](mem, opcode_main);
 
     // return cycles
     if (opcode_cycle_prefix_cb)
@@ -475,7 +475,7 @@ uint8_t Cpu::alu_swap(uint8_t n)
     return temp_reg_byte;
 }
 
-// Decimal adjust register A. This instruction adjusts register A 
+// Decimal adjust register A. This instruction adjusts register A
 // so that the correct representation of Binary Coded Decimal (BCD) is obtained.
 //
 // Flags affected:
@@ -519,7 +519,7 @@ void Cpu::alu_daa()
     reg.set_flag(FlagName::f_c, temp_adjust_byte >= 0x60);
     reg.set_flag(FlagName::f_h, false);
     reg.set_flag(FlagName::f_z, !temp_r_a_byte);
-    
+
     reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
 }
 
@@ -764,3 +764,313 @@ void Cpu::alu_jr(Memory &mem)
     uint16_t temp_reg_word = (temp_r_pc_dword & 0xffff);
     reg.set_register_word(RegisterName::r_pc, temp_reg_word);
 }
+
+// Decode and execute opcode
+// Opcode Main
+
+// 8-bit INC
+void Cpu::ex_inc_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_inc(temp_reg_byte);
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
+// 8-bit DEC
+void Cpu::ex_dec_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_dec(temp_reg_byte);
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
+// 8-bit ADD
+void Cpu::ex_add_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_add(temp_reg_byte);
+}
+
+// 8-bit ADC
+void Cpu::ex_adc_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_adc(temp_reg_byte);
+}
+
+// 8-bit SUB
+void Cpu::ex_sub_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_sub(temp_reg_byte);
+}
+
+// 8-bit SBC
+void Cpu::ex_sbc_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_sbc(temp_reg_byte);
+}
+
+// 8-bit AND
+void Cpu::ex_and_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_and(temp_reg_byte);
+}
+
+// 8-bit DDA
+void Cpu::ex_daa_byte(Memory &mem, uint8_t opcode_main)
+{
+    alu_daa();
+}
+
+// 8-bit SCF
+void Cpu::ex_scf_byte(Memory &mem, uint8_t opcode_main)
+{
+    alu_scf();
+}
+
+// 8-bit XOR
+void Cpu::ex_xor_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_xor(temp_reg_byte);
+}
+
+// 8-bit OR
+void Cpu::ex_or_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_or(temp_reg_byte);
+}
+
+// 8-bit CP
+void Cpu::ex_cp_byte(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(from);
+    alu_cp(temp_reg_byte);
+}
+// 8-bit CPL
+void Cpu::ex_cpl_byte(Memory &mem, uint8_t opcode_main)
+{
+    alu_cpl();
+}
+
+// 8-bit CCF
+void Cpu::ex_ccf_byte(Memory &mem, uint8_t opcode_main)
+{
+    alu_ccf();
+}
+
+// Operations for (HL) in zero page
+// 8-bit INC
+void ex_inc_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit DEC
+void ex_dec_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit ADD
+void ex_add_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit ADC
+void ex_adc_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit SUB
+void ex_sub_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit SBC
+void ex_sbc_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit AND
+void ex_and_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit XOR
+void ex_xor_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit OR
+void ex_or_hl_zp(Memory &mem, uint8_t opcode_main);
+// 8-bit CP
+void ex_cp_hl_zp(Memory &mem, uint8_t opcode_main);
+
+// 16-bit paired registers to HL ADD
+void Cpu::ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from_first = args.arg_reg_from_0;
+    RegisterName from_second = args.arg_reg_from_1;
+
+    uint16_t temp_reg_word = reg.get_register_byte_pair(from_first, from_second);
+    alu_add_hl(temp_reg_word);
+}
+
+// 16-bit SP to HL ADD
+void Cpu::ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName from = args.arg_reg_from_0;
+
+    uint16_t temp_reg_word = reg.get_register_word(from);
+    alu_add_hl(temp_reg_word);
+}
+
+// 16-bit r8 to SP ADD
+void ex_add_r8_to_sp(Memory &mem, uint8_t opcode_main);
+
+// 16-bit DEC
+void Cpu::ex_dec_pair(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName self_first = args.arg_reg_from_0;
+    RegisterName self_second = args.arg_reg_from_1;
+
+    // Flags affected: None
+    uint16_t temp_reg_word = reg.get_register_byte_pair(self_first, self_second);
+    temp_reg_word -= 1;
+
+    reg.set_register_byte_pair(self_first, self_second, temp_reg_word);
+}
+
+// 16-bit DEC
+void Cpu::ex_dec_sp(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint16_t temp_reg_word = reg.get_register_word(self);
+    temp_reg_word -= 1;
+
+    reg.set_register_word(self, temp_reg_word);
+}
+
+// 16-bit paired registers INC
+void Cpu::ex_inc_pair(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName self_first = args.arg_reg_from_0;
+    RegisterName self_second = args.arg_reg_from_1;
+
+    uint16_t temp_reg_word = reg.get_register_byte_pair(self_first, self_second);
+    temp_reg_word += 1;
+
+    reg.set_register_byte_pair(self_first, self_second, temp_reg_word);
+}
+
+// 16-bit INC
+void Cpu::ex_inc_sp(Memory &mem, uint8_t opcode_main)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint16_t temp_reg_word = reg.get_register_word(self);
+    temp_reg_word += 1;
+
+    reg.set_register_word(self, temp_reg_word);
+}
+
+// JR
+void ex_jr(Memory &mem, uint8_t opcode_main);
+// RET
+void ex_ret(Memory &mem, uint8_t opcode_main);
+// CALL
+void ex_call(Memory &mem, uint8_t opcode_main);
+// RST
+void ex_rst(Memory &mem, uint8_t opcode_main);
+// HALT
+void ex_halt(Memory &mem, uint8_t opcode_main);
+// EI
+void ex_ei(Memory &mem, uint8_t opcode_main);
+// DI
+void ex_di(Memory &mem, uint8_t opcode_main);
+
+// LD
+// 8-bit LD
+// LD 8-bit register to 8-bit register
+void ex_ld_byte(Memory &mem, uint8_t opcode_main);
+// LD 8-bit imm to 8-bit register
+void ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main);
+// LD 8-bit imm to (HL) in zero page
+void ex_ld_imm_to_hl_zp(Memory &mem, uint8_t opcode_main);
+// LD (BC or DE) in zero page to A
+void ex_ld_pair_zp_to_byte(Memory &mem, uint8_t opcode_main);
+// LD 8-bit register to (HL) in zero page
+void ex_ld_byte_to_hl_zp(Memory &mem, uint8_t opcode_main);
+// LD (HL) in zero page to 8-bit register
+void ex_ld_hl_zp_to_byte(Memory &mem, uint8_t opcode_main);
+
+// LDD: LD DEC
+// LDD 8-bit register to (HL) in zero page
+void ex_ldd_byte_to_hl_zp(Memory &mem, uint8_t opcode_main);
+// LDD (HL) in zero page to 8-bit register
+void ex_ldd_hl_zp_to_byte(Memory &mem, uint8_t opcode_main);
+
+// LDI: LD INC
+// LDI 8-bit register to (HL) in zero page
+void ex_ldi_byte_to_hl_zp(Memory &mem, uint8_t opcode_main);
+// LDI (HL) in zero page to 8-bit register
+void ex_ldi_hl_zp_to_byte(Memory &mem, uint8_t opcode_main);
+
+// 16-bit LD
+// LD 16-bit imm to 16-bit paired registers
+void ex_ld_imm_to_pair(Memory &mem, uint8_t opcode_main);
+// LD 16-bit imm to 16-bit SP
+void ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main);
+// LD 16-bit SP to memory
+void ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main);
+// LD 16-bit HL to 16-bit SP
+void ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main);
+// LD SP+r8 to HL
+void ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main);
+
+// 16-bit PUSH
+void ex_push_pair(Memory &mem, uint8_t opcode_main);
+// 16-bit POP
+void ex_pop_pair(Memory &mem, uint8_t opcode_main);
+
+// Opcode Prefix CB
+// 8-bit RLC
+void ex_rlc_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit RRC
+void ex_rrc_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit RL
+void ex_rl_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit RR
+void ex_rr_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit SLA
+void ex_sla_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit SRA
+void ex_sra_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit SWAP
+void ex_swap_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit SRL
+void ex_srl_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit BIT
+void ex_bit_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit RES
+void ex_res_byte(Memory &mem, uint8_t opcode_prefix_cb);
+// 8-bit SET
+void ex_set_byte(Memory &mem, uint8_t opcode_prefix_cb);
+
+// Continue to decode and execute Opcode Prefix CB
+void ex_prefix_cb(Memory &mem, uint8_t opcode_main);
