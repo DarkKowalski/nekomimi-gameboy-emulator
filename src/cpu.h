@@ -78,7 +78,7 @@ class Cpu
 {
   public:
     Register reg;
-    Memory mem;
+    Memory mem; // Need to be removed after mmuint finish
     bool f_halted;
     bool f_enable_interrupts;
 
@@ -401,27 +401,27 @@ class Cpu
     // 8-bit CCF
     void ex_ccf_byte(Memory &mem, uint8_t opcode_main);
     
-    // Operations for (HL) in zero page
+    // Operations for (HL) in memory
     // 8-bit INC
-    void ex_inc_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_inc_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit DEC
-    void ex_dec_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_dec_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit ADD
-    void ex_add_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_add_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit ADC
-    void ex_adc_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_adc_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit SUB
-    void ex_sub_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_sub_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit SBC
-    void ex_sbc_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_sbc_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit AND
-    void ex_and_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_and_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit XOR
-    void ex_xor_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_xor_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit OR
-    void ex_or_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_or_hl_mem(Memory &mem, uint8_t opcode_main);
     // 8-bit CP
-    void ex_cp_hl_zp(Memory &mem, uint8_t opcode_main);
+    void ex_cp_hl_mem(Memory &mem, uint8_t opcode_main);
 
     // 16-bit paired registers to HL ADD 
     void ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main);
@@ -442,12 +442,48 @@ class Cpu
 
     // JR
     void ex_jr(Memory &mem, uint8_t opcode_main);
+    // JR NZ
+    void ex_jr_nz(Memory &mem, uint8_t opcode_main);
+    // JR NC
+    void ex_jr_nc(Memory &mem, uint8_t opcode_main);
+    // JR Z
+    void ex_jr_z(Memory &mem, uint8_t opcode_main);
+    // JR C
+    void ex_jr_c(Memory &mem, uint8_t opcode_main);
+
+    // RET NZ
+    void ex_ret_nz(Memory &mem, uint8_t opcode_main);
+    // RET NC
+    void ex_ret_nc(Memory &mem, uint8_t opcode_main);
+    // RET Z
+    void ex_ret_z(Memory &mem, uint8_t opcode_main);
+    // RET C
+    void ex_ret_c(Memory &mem, uint8_t opcode_main);
     // RET
     void ex_ret(Memory &mem, uint8_t opcode_main);
+    // RETI
+    void ex_reti(Memory &mem, uint8_t opcode_main);
+
     // CALL
     void ex_call(Memory &mem, uint8_t opcode_main);
-    // RST
-    void ex_rst(Memory &mem, uint8_t opcode_main);
+    // CALL NZ
+    void ex_call_nz(Memory &mem, uint8_t opcode_main);
+    // CALL NC
+    void ex_call_nc(Memory &mem, uint8_t opcode_main);
+    // CALL Z
+    void ex_call_z(Memory &mem, uint8_t opcode_main);
+    // CALL C
+    void ex_call_c(Memory &mem, uint8_t opcode_main);
+
+    // RST 0x00
+    void ex_rst_00(Memory &mem, uint8_t opcode_main);
+    // RST 0x10
+    void ex_rst_10(Memory &mem, uint8_t opcode_main);
+    // RST 0x20
+    void ex_rst_20(Memory &mem, uint8_t opcode_main);
+    // RST 0x30
+    void ex_rst_30(Memory &mem, uint8_t opcode_main);
+
     // HALT
     void ex_halt(Memory &mem, uint8_t opcode_main);
     // EI
@@ -461,26 +497,32 @@ class Cpu
     void ex_ld_byte(Memory &mem, uint8_t opcode_main);
     // LD 8-bit imm to 8-bit register
     void ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main);
-    // LD 8-bit imm to (HL) in zero page
-    void ex_ld_imm_to_hl_zp(Memory &mem, uint8_t opcode_main);
-    // LD (BC or DE) in zero page to A
-    void ex_ld_pair_zp_to_byte(Memory &mem, uint8_t opcode_main);
-    // LD 8-bit register to (HL) in zero page
-    void ex_ld_byte_to_hl_zp(Memory &mem, uint8_t opcode_main);
-    // LD (HL) in zero page to 8-bit register
-    void ex_ld_hl_zp_to_byte(Memory &mem, uint8_t opcode_main);
+    // LD 8-bit imm to (HL) in memory
+    void ex_ld_imm_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    // LD (BC or DE) in memory to A
+    void ex_ld_pair_mem_to_byte(Memory &mem, uint8_t opcode_main);
+    // LD 8-bit register to (HL) in memory
+    void ex_ld_byte_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    // LD (HL) in memory to 8-bit register
+    void ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main);
+
+    // 8-bit Zero Page LD
+    // LD 8-bit register A to (C) in zero page
+    void ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main);
+    // LD (C) in zero page to 8-bit Register A
+    void ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main);
     
     // LDD: LD DEC
-    // LDD 8-bit register to (HL) in zero page
-    void ex_ldd_byte_to_hl_zp(Memory &mem, uint8_t opcode_main);
-    // LDD (HL) in zero page to 8-bit register
-    void ex_ldd_hl_zp_to_byte(Memory &mem, uint8_t opcode_main);
+    // LDD 8-bit register A to (HL) in memory
+    void ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    // LDD (HL) in memory to 8-bit register A
+    void ex_ldd_hl_mem_to_byte(Memory &mem, uint8_t opcode_main);
 
     // LDI: LD INC
-    // LDI 8-bit register to (HL) in zero page
-    void ex_ldi_byte_to_hl_zp(Memory &mem, uint8_t opcode_main);
-    // LDI (HL) in zero page to 8-bit register
-    void ex_ldi_hl_zp_to_byte(Memory &mem, uint8_t opcode_main);
+    // LDI 8-bit register A to (HL) in memory
+    void ex_ldi_byte_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    // LDI (HL) in memory to 8-bit register A
+    void ex_ldi_hl_mem_to_byte(Memory &mem, uint8_t opcode_main);
 
     // 16-bit LD
     // LD 16-bit imm to 16-bit paired registers
