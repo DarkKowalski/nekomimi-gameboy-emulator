@@ -156,7 +156,7 @@ uint8_t Cpu::execute(Memory &mem)
 
     // Handle opcode (8-bit)
     // If opcode has 16 bits (prefix-cb), continue to handle rest 8 bits
-    handle_opcode_main[opcode_main](mem, opcode_main);
+    handle_opcode_main[opcode_main](mem, opcode_main, opcode_prefix_cb);
 
     // return cycles
     if (opcode_cycle_prefix_cb)
@@ -768,8 +768,43 @@ void Cpu::alu_jr(Memory &mem)
 // Decode and execute opcode
 // Opcode Main
 
+// RLCA
+void Cpu::ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    temp_r_a_byte = alu_rlc(temp_r_a_byte);
+    reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
+    reg.set_flag(FlagName::f_z, false);
+}
+
+// RLA
+void Cpu::ex_rla(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    temp_r_a_byte = alu_rl(temp_r_a_byte);
+    reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
+    reg.set_flag(FlagName::f_z, false);
+}
+// RRCA
+void Cpu::ex_rrca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    temp_r_a_byte = alu_rrc(temp_r_a_byte);
+    reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
+    reg.set_flag(FlagName::f_z, false);
+}
+
+// RRA
+void Cpu::ex_rra(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    temp_r_a_byte = alu_rr(temp_r_a_byte);
+    reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
+    reg.set_flag(FlagName::f_z, false);
+}
+
 // 8-bit INC
-void Cpu::ex_inc_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_inc_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self = args.arg_reg_from_0;
@@ -780,7 +815,7 @@ void Cpu::ex_inc_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit DEC
-void Cpu::ex_dec_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_dec_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self = args.arg_reg_from_0;
@@ -791,7 +826,7 @@ void Cpu::ex_dec_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit ADD
-void Cpu::ex_add_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_add_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -801,7 +836,7 @@ void Cpu::ex_add_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit ADC
-void Cpu::ex_adc_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_adc_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -811,7 +846,7 @@ void Cpu::ex_adc_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit SUB
-void Cpu::ex_sub_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_sub_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -820,7 +855,7 @@ void Cpu::ex_sub_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit SBC
-void Cpu::ex_sbc_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_sbc_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -830,7 +865,7 @@ void Cpu::ex_sbc_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit AND
-void Cpu::ex_and_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_and_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -840,19 +875,19 @@ void Cpu::ex_and_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit DDA
-void Cpu::ex_daa_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_daa_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     alu_daa();
 }
 
 // 8-bit SCF
-void Cpu::ex_scf_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_scf_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     alu_scf();
 }
 
 // 8-bit XOR
-void Cpu::ex_xor_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_xor_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -862,7 +897,7 @@ void Cpu::ex_xor_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit OR
-void Cpu::ex_or_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_or_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -872,7 +907,7 @@ void Cpu::ex_or_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit CP
-void Cpu::ex_cp_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_cp_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -881,20 +916,20 @@ void Cpu::ex_cp_byte(Memory &mem, uint8_t opcode_main)
     alu_cp(temp_reg_byte);
 }
 // 8-bit CPL
-void Cpu::ex_cpl_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_cpl_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     alu_cpl();
 }
 
 // 8-bit CCF
-void Cpu::ex_ccf_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ccf_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     alu_ccf();
 }
 
 // Operations for (HL) in memory
 // 8-bit INC
-void Cpu::ex_inc_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_inc_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -903,7 +938,7 @@ void Cpu::ex_inc_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit DEC
-void Cpu::ex_dec_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_dec_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -912,7 +947,7 @@ void Cpu::ex_dec_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit ADD
-void Cpu::ex_add_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_add_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -920,7 +955,7 @@ void Cpu::ex_add_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit ADC
-void Cpu::ex_adc_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_adc_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -928,7 +963,7 @@ void Cpu::ex_adc_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit SUB
-void Cpu::ex_sub_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_sub_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -936,7 +971,7 @@ void Cpu::ex_sub_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit SBC
-void Cpu::ex_sbc_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_sbc_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -944,7 +979,7 @@ void Cpu::ex_sbc_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit AND
-void Cpu::ex_and_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_and_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -952,7 +987,7 @@ void Cpu::ex_and_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit XOR
-void Cpu::ex_xor_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_xor_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -960,7 +995,7 @@ void Cpu::ex_xor_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit OR
-void Cpu::ex_or_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_or_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -968,7 +1003,7 @@ void Cpu::ex_or_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 8-bit CP
-void Cpu::ex_cp_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_cp_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -976,7 +1011,7 @@ void Cpu::ex_cp_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit paired registers to HL ADD
-void Cpu::ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from_first = args.arg_reg_from_0;
@@ -987,7 +1022,7 @@ void Cpu::ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit SP to HL ADD
-void Cpu::ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -997,13 +1032,13 @@ void Cpu::ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit r8 to SP ADD
-void Cpu::ex_add_r8_to_sp(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_add_r8_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     alu_add_sp(mem);
 }
 
 // 16-bit DEC
-void Cpu::ex_dec_pair(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_dec_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self_first = args.arg_reg_from_0;
@@ -1017,7 +1052,7 @@ void Cpu::ex_dec_pair(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit DEC
-void Cpu::ex_dec_sp(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_dec_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self = args.arg_reg_from_0;
@@ -1029,7 +1064,7 @@ void Cpu::ex_dec_sp(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit paired registers INC
-void Cpu::ex_inc_pair(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_inc_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self_first = args.arg_reg_from_0;
@@ -1042,7 +1077,7 @@ void Cpu::ex_inc_pair(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit INC
-void Cpu::ex_inc_sp(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_inc_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self = args.arg_reg_from_0;
@@ -1054,13 +1089,13 @@ void Cpu::ex_inc_sp(Memory &mem, uint8_t opcode_main)
 }
 
 // JR
-void Cpu::ex_jr(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_jr(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     alu_jr(mem);
 }
 
 // JR NZ
-void Cpu::ex_jr_nz(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_jr_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
     if (!f_z)
@@ -1074,7 +1109,7 @@ void Cpu::ex_jr_nz(Memory &mem, uint8_t opcode_main)
 }
 
 // JR NC
-void Cpu::ex_jr_nc(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_jr_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
     if (!f_c)
@@ -1088,7 +1123,7 @@ void Cpu::ex_jr_nc(Memory &mem, uint8_t opcode_main)
 }
 
 // JR Z
-void Cpu::ex_jr_z(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_jr_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
     if (f_z)
@@ -1102,7 +1137,7 @@ void Cpu::ex_jr_z(Memory &mem, uint8_t opcode_main)
 }
 
 // JR C
-void Cpu::ex_jr_c(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_jr_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
     if (f_c)
@@ -1116,7 +1151,7 @@ void Cpu::ex_jr_c(Memory &mem, uint8_t opcode_main)
 }
 
 // RET NZ
-void Cpu::ex_ret_nz(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ret_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
     if (!f_z)
@@ -1127,7 +1162,7 @@ void Cpu::ex_ret_nz(Memory &mem, uint8_t opcode_main)
 }
 
 // RET NC
-void Cpu::ex_ret_nc(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ret_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
     if (!f_c)
@@ -1138,7 +1173,7 @@ void Cpu::ex_ret_nc(Memory &mem, uint8_t opcode_main)
 }
 
 // RET Z
-void Cpu::ex_ret_z(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ret_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
     if (f_z)
@@ -1149,7 +1184,7 @@ void Cpu::ex_ret_z(Memory &mem, uint8_t opcode_main)
 }
 
 // RET C
-void Cpu::ex_ret_c(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ret_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
     if (f_c)
@@ -1160,14 +1195,14 @@ void Cpu::ex_ret_c(Memory &mem, uint8_t opcode_main)
 }
 
 // RET
-void Cpu::ex_ret(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ret(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_reg_word = stack_pop(mem);
     reg.set_register_word(RegisterName::r_pc, temp_reg_word);
 }
 
 // RETI
-void Cpu::ex_reti(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_reti(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_reg_word = stack_pop(mem);
     reg.set_register_word(RegisterName::r_pc, temp_reg_word);
@@ -1176,24 +1211,24 @@ void Cpu::ex_reti(Memory &mem, uint8_t opcode_main)
 }
 
 // CALL
-void Cpu::ex_call(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_call(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
     stack_add(mem, temp_r_pc_word + 2);
-    
+
     uint16_t temp_mem_word = mem.get_memory_word(temp_r_pc_word);
     reg.set_register_word(RegisterName::r_pc, temp_mem_word);
 }
 
 // CALL NZ
-void Cpu::ex_call_nz(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_call_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
     if (!f_z)
     {
         uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
         stack_add(mem, temp_r_pc_word + 2);
-    
+
         uint16_t temp_mem_word = mem.get_memory_word(temp_r_pc_word);
         reg.set_register_word(RegisterName::r_pc, temp_mem_word);
     }
@@ -1201,18 +1236,17 @@ void Cpu::ex_call_nz(Memory &mem, uint8_t opcode_main)
     {
         reg.register_word[RegisterName::r_pc] += 2;
     }
-    
 }
 
 // CALL NC
-void Cpu::ex_call_nc(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_call_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
     if (!f_c)
     {
         uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
         stack_add(mem, temp_r_pc_word + 2);
-    
+
         uint16_t temp_mem_word = mem.get_memory_word(temp_r_pc_word);
         reg.set_register_word(RegisterName::r_pc, temp_mem_word);
     }
@@ -1223,14 +1257,14 @@ void Cpu::ex_call_nc(Memory &mem, uint8_t opcode_main)
 }
 
 // CALL Z
-void Cpu::ex_call_z(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_call_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
     if (f_z)
     {
         uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
         stack_add(mem, temp_r_pc_word + 2);
-    
+
         uint16_t temp_mem_word = mem.get_memory_word(temp_r_pc_word);
         reg.set_register_word(RegisterName::r_pc, temp_mem_word);
     }
@@ -1241,14 +1275,14 @@ void Cpu::ex_call_z(Memory &mem, uint8_t opcode_main)
 }
 
 // CALL C
-void Cpu::ex_call_c(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_call_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
     if (f_c)
     {
         uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
         stack_add(mem, temp_r_pc_word + 2);
-    
+
         uint16_t temp_mem_word = mem.get_memory_word(temp_r_pc_word);
         reg.set_register_word(RegisterName::r_pc, temp_mem_word);
     }
@@ -1259,7 +1293,7 @@ void Cpu::ex_call_c(Memory &mem, uint8_t opcode_main)
 }
 
 // RST 0x00
-void Cpu::ex_rst_00(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_rst_00(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
     stack_add(mem, temp_r_pc_word);
@@ -1268,7 +1302,7 @@ void Cpu::ex_rst_00(Memory &mem, uint8_t opcode_main)
 }
 
 // RST 0x10
-void Cpu::ex_rst_10(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_rst_10(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
     stack_add(mem, temp_r_pc_word);
@@ -1277,7 +1311,7 @@ void Cpu::ex_rst_10(Memory &mem, uint8_t opcode_main)
 }
 
 // RST 0x20
-void Cpu::ex_rst_20(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_rst_20(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
     stack_add(mem, temp_r_pc_word);
@@ -1286,7 +1320,7 @@ void Cpu::ex_rst_20(Memory &mem, uint8_t opcode_main)
 }
 
 // RST 0x30
-void Cpu::ex_rst_30(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_rst_30(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
     stack_add(mem, temp_r_pc_word);
@@ -1295,19 +1329,19 @@ void Cpu::ex_rst_30(Memory &mem, uint8_t opcode_main)
 }
 
 // HALT
-void Cpu::ex_halt(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_halt(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     f_halted = true;
 }
 
 // EI
-void Cpu::ex_ei(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ei(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     f_enable_interrupts = true;
 }
 
 // DI
-void Cpu::ex_di(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_di(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     f_enable_interrupts = false;
 }
@@ -1315,7 +1349,7 @@ void Cpu::ex_di(Memory &mem, uint8_t opcode_main)
 // LD
 // 8-bit LD
 // LD 8-bit register to 8-bit register
-void Cpu::ex_ld_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -1326,7 +1360,7 @@ void Cpu::ex_ld_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // LD 8-bit imm to 8-bit register
-void Cpu::ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName to = args.arg_reg_to_0;
@@ -1336,7 +1370,7 @@ void Cpu::ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main)
 }
 
 // LD 8-bit imm to (HL) in memory
-void Cpu::ex_ld_imm_to_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_imm_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_imm_byte = read_opcode_byte(mem);
@@ -1345,7 +1379,7 @@ void Cpu::ex_ld_imm_to_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // LD (BC or DE) in memory to A
-void Cpu::ex_ld_pair_mem_to_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_pair_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from_first = args.arg_reg_from_0;
@@ -1357,8 +1391,21 @@ void Cpu::ex_ld_pair_mem_to_byte(Memory &mem, uint8_t opcode_main)
     reg.set_register_byte(RegisterName::r_a, temp_mem_byte);
 }
 
+// LD A to (BC or DE) in memory
+void Cpu::ex_ld_byte_to_pair_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_main[opcode_main];
+    RegisterName to_first = args.arg_reg_to_0;
+    RegisterName to_second = args.arg_reg_to_1;
+
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    uint16_t temp_pair_word = reg.get_register_byte_pair(to_first, to_second);
+
+    mem.set_memory_byte(temp_pair_word, temp_r_a_byte);
+}
+
 // LD 8-bit register to (HL) in memory
-void Cpu::ex_ld_byte_to_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName from = args.arg_reg_from_0;
@@ -1370,7 +1417,7 @@ void Cpu::ex_ld_byte_to_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // LD (HL) in memory to 8-bit register
-void Cpu::ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName to = args.arg_reg_to_0;
@@ -1383,7 +1430,7 @@ void Cpu::ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main)
 
 // LDD: LD DEC
 // LDD 8-bit register A to (HL) in memory
-void Cpu::ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
@@ -1393,7 +1440,7 @@ void Cpu::ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main)
     reg.set_register_byte_pair(RegisterName::r_h, RegisterName::r_l, temp_r_hl_word);
 }
 // LDD (HL) in memory to 8-bit register A
-void Cpu::ex_ldd_hl_mem_to_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ldd_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -1405,7 +1452,7 @@ void Cpu::ex_ldd_hl_mem_to_byte(Memory &mem, uint8_t opcode_main)
 
 // LDI: LD INC
 // LDI 8-bit register A to (HL) in memory
-void Cpu::ex_ldi_byte_to_hl_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ldi_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
@@ -1416,7 +1463,7 @@ void Cpu::ex_ldi_byte_to_hl_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // LDI (HL) in memory to 8-bit register A
-void Cpu::ex_ldi_hl_mem_to_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ldi_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
@@ -1428,7 +1475,7 @@ void Cpu::ex_ldi_hl_mem_to_byte(Memory &mem, uint8_t opcode_main)
 
 // 8-bit Zero Page LD
 // LD 8-bit register A to (C) in zero page
-void Cpu::ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint8_t temp_r_c_byte = reg.get_register_byte(RegisterName::r_c);
     uint16_t temp_address_zp_word = temp_r_c_byte | 0xff00;
@@ -1438,7 +1485,7 @@ void Cpu::ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main)
 }
 
 // LD (C) in zero page to 8-bit Register A
-void Cpu::ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint8_t temp_r_c_byte = reg.get_register_byte(RegisterName::r_c);
     uint16_t temp_address_zp_word = temp_r_c_byte | 0xff00;
@@ -1449,7 +1496,7 @@ void Cpu::ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main)
 
 // 16-bit LD
 // LD 16-bit imm to 16-bit paired registers
-void Cpu::ex_ld_imm_to_pair(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_imm_to_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName to_first = args.arg_reg_to_0;
@@ -1460,14 +1507,14 @@ void Cpu::ex_ld_imm_to_pair(Memory &mem, uint8_t opcode_main)
 }
 
 // LD 16-bit imm to 16-bit SP
-void Cpu::ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_imm_word = read_opcode_word(mem);
     reg.set_register_word(RegisterName::r_sp, temp_imm_word);
 }
 
 // LD 16-bit SP to memory
-void Cpu::ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_address_word = read_opcode_byte(mem);
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
@@ -1476,7 +1523,7 @@ void Cpu::ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main)
 }
 
 // LD 16-bit HL to 16-bit SP
-void Cpu::ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
     reg.set_register_word(RegisterName::r_sp, temp_r_hl_word);
@@ -1486,7 +1533,7 @@ void Cpu::ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main)
 // Need to carefully test this method, risk overflow
 // Read the manual, and if it malfunctions, report issue
 // if not, remove this Warning
-void Cpu::ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
     uint16_t temp_r8_word = read_opcode_byte(mem);
@@ -1505,7 +1552,7 @@ void Cpu::ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit PUSH
-void Cpu::ex_push_pair(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_push_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self_first = args.arg_reg_from_0;
@@ -1516,7 +1563,7 @@ void Cpu::ex_push_pair(Memory &mem, uint8_t opcode_main)
 }
 
 // 16-bit POP
-void Cpu::ex_pop_pair(Memory &mem, uint8_t opcode_main)
+void Cpu::ex_pop_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     PackedArgs args = opcode_args_main[opcode_main];
     RegisterName self_first = args.arg_reg_from_0;
@@ -1528,27 +1575,258 @@ void Cpu::ex_pop_pair(Memory &mem, uint8_t opcode_main)
 
 // Opcode Prefix CB
 // 8-bit RLC
-void ex_rlc_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_rlc_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_rlc(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit RRC
-void ex_rrc_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_rrc_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_rrc(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit RL
-void ex_rl_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_rl_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_rl(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit RR
-void ex_rr_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_rr_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_rr(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit SLA
-void ex_sla_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_sla_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_sla(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit SRA
-void ex_sra_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_sra_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_sra(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit SWAP
-void ex_swap_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_swap_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_swap(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit SRL
-void ex_srl_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_srl_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_srl(temp_reg_byte);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit BIT
-void ex_bit_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_bit_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+    uint8_t bit = args.arg_bit;
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+
+    alu_bit(self, bit);
+}
 // 8-bit RES
-void ex_res_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_res_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+    uint8_t bit = args.arg_bit;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_res(temp_reg_byte, bit);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
 // 8-bit SET
-void ex_set_byte(Memory &mem, uint8_t opcode_prefix_cb);
+void Cpu::ex_set_byte(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    RegisterName self = args.arg_reg_from_0;
+    uint8_t bit = args.arg_bit;
+
+    uint8_t temp_reg_byte = reg.get_register_byte(self);
+    temp_reg_byte = alu_set(temp_reg_byte, bit);
+
+    reg.set_register_byte(self, temp_reg_byte);
+}
+
+// 16-bit RLC for (HL) in memory
+void Cpu::ex_rlc_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_rlc(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit RRC for (HL) in memory
+void Cpu::ex_rrc_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_rrc(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit RL for (HL) in memory
+void Cpu::ex_rl_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_rl(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit RR for (HL) in memory
+void Cpu::ex_rr_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_rr(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit SLA for (HL) in memory
+void Cpu::ex_sla_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_sla(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit SRA for (HL) in memory
+void Cpu::ex_sra_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_sra(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit SWAP for (HL) in memory
+void Cpu::ex_swap_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_swap(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit SRL for (HL) in memory
+void Cpu::ex_srl_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_srl(temp_mem_byte);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit BIT for (HL) in memory
+void Cpu::ex_bit_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    uint8_t bit = args.arg_bit;
+
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    alu_bit(temp_mem_byte, bit);
+}
+
+// 16-bit RES for (HL) in memory
+void Cpu::ex_res_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    uint8_t bit = args.arg_bit;
+
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_res(temp_mem_byte, bit);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
+
+// 16-bit SET for (HL) in memory
+void Cpu::ex_set_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
+{
+    PackedArgs args = opcode_args_prefix_cb[opcode_prefix_cb];
+    uint8_t bit = args.arg_bit;
+
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_r_hl_word);
+
+    temp_mem_byte = alu_set(temp_mem_byte, bit);
+    mem.set_memory_byte(temp_r_hl_word, temp_mem_byte);
+}
 
 // Continue to decode and execute Opcode Prefix CB
-void ex_prefix_cb(Memory &mem, uint8_t opcode_main);
+void Cpu::ex_prefix_cb(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    ref_opcode_prefix_cb = read_opcode_byte(mem);
+    handle_opcode_prefix_cb[ref_opcode_prefix_cb](mem, ref_opcode_prefix_cb);
+}

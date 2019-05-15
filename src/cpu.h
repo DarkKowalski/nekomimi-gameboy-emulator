@@ -60,10 +60,10 @@ struct PackedArgs
     RegisterName arg_reg_to_0; // To
     RegisterName arg_reg_to_1; // To (paired 8-bit register)
 
-    uint16_t arg_mem_address; // Memorary address
-
     FlagName arg_falg_0; // Flag
     FlagName arg_falg_1; // Flag
+
+    uint8_t arg_bit; // Bit for Prefix CB Opcodes
 };
 
 const PackedArgs opcode_args_main[256] = {
@@ -78,13 +78,31 @@ class Cpu
 {
   public:
     Register reg;
-    Memory mem; // Need to be removed after mmuint finish
+    Memory mem; // Need to be removed after mmuint finishs
     bool f_halted;
     bool f_enable_interrupts;
 
     // Handle opcode operations
-    void (*handle_opcode_main[256])(Memory &mem, uint8_t opcode_main);
+    void (*handle_opcode_main[256])(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     void (*handle_opcode_prefix_cb[256])(Memory &mem, uint8_t opcode_prefix_cb);
+
+    // Function Table
+    // Main
+    *handle_opcode_main[0x01] = ex_ld_imm_to_pair;
+    *handle_opcode_main[0x02] = ex_ld_byte_to_pair_mem;
+    *handle_opcode_main[0x03] = ex_inc_pair;
+    *handle_opcode_main[0x04] = ex_inc_byte;
+    *handle_opcode_main[0x05] = ex_dec_byte;
+    *handle_opcode_main[0x06] = ex_ld_imm_to_byte;
+    *handle_opcode_main[0x07] = ex_rlca;
+    *handle_opcode_main[0x08] = ex_ld_sp_to_mem;
+    *handle_opcode_main[0x09] = ex_add_pair_to_hl;
+    *handle_opcode_main[0x0a] = ex_ld_pair_mem_to_byte;
+    *handle_opcode_main[0x0b] = ex_dec_pair;
+    *handle_opcode_main[0x0c] = ex_inc_byte;
+    *handle_opcode_main[0x0d] = ex_dec_byte;
+    *handle_opcode_main[0x0e] = ex_ld_imm_to_byte;
+    *handle_opcode_main[0x0f] = ex_rrca;
 
     // Initialize registers and flag status when power on
     Cpu &power_on();
@@ -371,175 +389,185 @@ class Cpu
 
     // Decode and execute opcode
     // Opcode Main
+    // RLCA
+    void ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    // RLA
+    void ex_rla(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    // RRCA
+    void ex_rrca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    // RRA
+    void ex_rra(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 8-bit INC
-    void ex_inc_byte(Memory &mem, uint8_t opcode_main);
+    void ex_inc_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit DEC
-    void ex_dec_byte(Memory &mem, uint8_t opcode_main);
+    void ex_dec_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit ADD
-    void ex_add_byte(Memory &mem, uint8_t opcode_main);
+    void ex_add_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit ADC
-    void ex_adc_byte(Memory &mem, uint8_t opcode_main);
+    void ex_adc_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit SUB
-    void ex_sub_byte(Memory &mem, uint8_t opcode_main);
+    void ex_sub_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit SBC
-    void ex_sbc_byte(Memory &mem, uint8_t opcode_main);
+    void ex_sbc_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit AND
-    void ex_and_byte(Memory &mem, uint8_t opcode_main);
+    void ex_and_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit DAA
-    void ex_daa_byte(Memory &mem, uint8_t opcode_main);
+    void ex_daa_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit SCF
-    void ex_scf_byte(Memory &mem, uint8_t opcode_main);
+    void ex_scf_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit XOR
-    void ex_xor_byte(Memory &mem, uint8_t opcode_main);
+    void ex_xor_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit OR
-    void ex_or_byte(Memory &mem, uint8_t opcode_main);
+    void ex_or_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit CP
-    void ex_cp_byte(Memory &mem, uint8_t opcode_main);
+    void ex_cp_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit CPL
-    void ex_cpl_byte(Memory &mem, uint8_t opcode_main);
+    void ex_cpl_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit CCF
-    void ex_ccf_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ccf_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     
     // Operations for (HL) in memory
     // 8-bit INC
-    void ex_inc_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_inc_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit DEC
-    void ex_dec_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_dec_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit ADD
-    void ex_add_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_add_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit ADC
-    void ex_adc_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_adc_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit SUB
-    void ex_sub_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_sub_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit SBC
-    void ex_sbc_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_sbc_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit AND
-    void ex_and_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_and_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit XOR
-    void ex_xor_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_xor_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit OR
-    void ex_or_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_or_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 8-bit CP
-    void ex_cp_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_cp_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 16-bit paired registers to HL ADD 
-    void ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main);
+    void ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 16-bit SP to HL ADD 
-    void ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main);
+    void ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 16-bit r8 to SP ADD
-    void ex_add_r8_to_sp(Memory &mem, uint8_t opcode_main);
+    void ex_add_r8_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 16-bit DEC (paired registers)
-    void ex_dec_pair(Memory &mem, uint8_t opcode_main);
+    void ex_dec_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 16-bit SP DEC
-    void ex_dec_sp(Memory &mem, uint8_t opcode_main);
+    void ex_dec_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 16-bit INC (paired registers)
-    void ex_inc_pair(Memory &mem, uint8_t opcode_main);
+    void ex_inc_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 16-bit INC
-    void ex_inc_sp(Memory &mem, uint8_t opcode_main);
+    void ex_inc_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // JR
-    void ex_jr(Memory &mem, uint8_t opcode_main);
+    void ex_jr(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // JR NZ
-    void ex_jr_nz(Memory &mem, uint8_t opcode_main);
+    void ex_jr_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // JR NC
-    void ex_jr_nc(Memory &mem, uint8_t opcode_main);
+    void ex_jr_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // JR Z
-    void ex_jr_z(Memory &mem, uint8_t opcode_main);
+    void ex_jr_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // JR C
-    void ex_jr_c(Memory &mem, uint8_t opcode_main);
+    void ex_jr_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // RET NZ
-    void ex_ret_nz(Memory &mem, uint8_t opcode_main);
+    void ex_ret_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RET NC
-    void ex_ret_nc(Memory &mem, uint8_t opcode_main);
+    void ex_ret_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RET Z
-    void ex_ret_z(Memory &mem, uint8_t opcode_main);
+    void ex_ret_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RET C
-    void ex_ret_c(Memory &mem, uint8_t opcode_main);
+    void ex_ret_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RET
-    void ex_ret(Memory &mem, uint8_t opcode_main);
+    void ex_ret(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RETI
-    void ex_reti(Memory &mem, uint8_t opcode_main);
+    void ex_reti(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // CALL
-    void ex_call(Memory &mem, uint8_t opcode_main);
+    void ex_call(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // CALL NZ
-    void ex_call_nz(Memory &mem, uint8_t opcode_main);
+    void ex_call_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // CALL NC
-    void ex_call_nc(Memory &mem, uint8_t opcode_main);
+    void ex_call_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // CALL Z
-    void ex_call_z(Memory &mem, uint8_t opcode_main);
+    void ex_call_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // CALL C
-    void ex_call_c(Memory &mem, uint8_t opcode_main);
+    void ex_call_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // RST 0x00
-    void ex_rst_00(Memory &mem, uint8_t opcode_main);
+    void ex_rst_00(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RST 0x10
-    void ex_rst_10(Memory &mem, uint8_t opcode_main);
+    void ex_rst_10(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RST 0x20
-    void ex_rst_20(Memory &mem, uint8_t opcode_main);
+    void ex_rst_20(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RST 0x30
-    void ex_rst_30(Memory &mem, uint8_t opcode_main);
+    void ex_rst_30(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // HALT
-    void ex_halt(Memory &mem, uint8_t opcode_main);
+    void ex_halt(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // EI
-    void ex_ei(Memory &mem, uint8_t opcode_main);
+    void ex_ei(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // DI
-    void ex_di(Memory &mem, uint8_t opcode_main);
+    void ex_di(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // LD
     // 8-bit LD
     // LD 8-bit register to 8-bit register
-    void ex_ld_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ld_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD 8-bit imm to 8-bit register
-    void ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ld_imm_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD 8-bit imm to (HL) in memory
-    void ex_ld_imm_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_ld_imm_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD (BC or DE) in memory to A
-    void ex_ld_pair_mem_to_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ld_pair_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    // LD A to (BC or DE) in memory
+    void ex_ld_byte_to_pair_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD 8-bit register to (HL) in memory
-    void ex_ld_byte_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_ld_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD (HL) in memory to 8-bit register
-    void ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 8-bit Zero Page LD
     // LD 8-bit register A to (C) in zero page
-    void ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main);
+    void ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD (C) in zero page to 8-bit Register A
-    void ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     
     // LDD: LD DEC
     // LDD 8-bit register A to (HL) in memory
-    void ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LDD (HL) in memory to 8-bit register A
-    void ex_ldd_hl_mem_to_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ldd_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // LDI: LD INC
     // LDI 8-bit register A to (HL) in memory
-    void ex_ldi_byte_to_hl_mem(Memory &mem, uint8_t opcode_main);
+    void ex_ldi_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LDI (HL) in memory to 8-bit register A
-    void ex_ldi_hl_mem_to_byte(Memory &mem, uint8_t opcode_main);
+    void ex_ldi_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 16-bit LD
     // LD 16-bit imm to 16-bit paired registers
-    void ex_ld_imm_to_pair(Memory &mem, uint8_t opcode_main);
+    void ex_ld_imm_to_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD 16-bit imm to 16-bit SP
-    void ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main);
+    void ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD 16-bit SP to memory
-    void ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main);
+    void ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD 16-bit HL to 16-bit SP
-    void ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main);
+    void ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // LD SP+r8 to HL
-    void ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main);
+    void ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // 16-bit PUSH
-    void ex_push_pair(Memory &mem, uint8_t opcode_main);
+    void ex_push_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 16-bit POP
-    void ex_pop_pair(Memory &mem, uint8_t opcode_main);
+    void ex_pop_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // Opcode Prefix CB
     // 8-bit RLC
@@ -564,9 +592,32 @@ class Cpu
     void ex_res_byte(Memory &mem, uint8_t opcode_prefix_cb);
     // 8-bit SET
     void ex_set_byte(Memory &mem, uint8_t opcode_prefix_cb);
+    
+    // 16-bit RLC for (HL) in memory
+    void ex_rlc_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit RRC for (HL) in memory
+    void ex_rrc_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit RL for (HL) in memory
+    void ex_rl_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit RR for (HL) in memory
+    void ex_rr_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit SLA for (HL) in memory
+    void ex_sla_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit SRA for (HL) in memory
+    void ex_sra_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit SWAP for (HL) in memory
+    void ex_swap_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit SRL for (HL) in memory
+    void ex_srl_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit BIT for (HL) in memory
+    void ex_bit_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit RES for (HL) in memory
+    void ex_res_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
+    // 16-bit SET for (HL) in memory
+    void ex_set_hl_mem(Memory &mem, uint8_t opcode_prefix_cb);
 
     // Continue to decode and execute Opcode Prefix CB
-    void ex_prefix_cb(Memory &mem, uint8_t opcode_main);
+    void ex_prefix_cb(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 };
 } // namespace gameboy
 #endif
