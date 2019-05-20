@@ -1021,6 +1021,62 @@ void Cpu::ex_add_pair_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcod
     alu_add_hl(temp_reg_word);
 }
 
+// ADD 8-bit imm
+void Cpu::ex_add_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_add(temp_imm_byte);
+}
+
+// SUB 8-bit imm
+void Cpu::ex_sub_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_sub(temp_imm_byte);
+}
+
+// AND 8-bit imm
+void Cpu::ex_and_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_and(temp_imm_byte);
+}
+
+// OR 8-bit imm
+void Cpu::ex_or_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_or(temp_imm_byte);
+}
+
+// XOR 8-bit imm
+void Cpu::ex_xor_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_xor(temp_imm_byte);
+}
+
+// CP 8-bit imm
+void Cpu::ex_cp_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_cp(temp_imm_byte);
+}
+
+// ADC 8-bit imm
+void Cpu::ex_adc_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_adc(temp_imm_byte);
+}
+
+// SBC 8-bit imm
+void Cpu::ex_sbc_imm(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    alu_sbc(temp_imm_byte);
+}
+
 // 16-bit SP to HL ADD
 void Cpu::ex_add_sp_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
@@ -1148,6 +1204,64 @@ void Cpu::ex_jr_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
     {
         reg.register_word[RegisterName::r_pc] += 1;
     }
+}
+
+// JP
+void Cpu::ex_jp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_imm_word = read_opcode_word(mem);
+    reg.set_register_word(RegisterName::r_pc, temp_imm_word);
+}
+
+// JP NZ
+void Cpu::ex_jp_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    bool f_z = reg.get_flag(FlagName::f_z);
+    if (!f_z)
+    {
+        uint16_t temp_imm_word = read_opcode_word(mem);
+        reg.set_register_word(RegisterName::r_pc, temp_imm_word);
+    }
+}
+
+// JP NC
+void Cpu::ex_jp_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    bool f_c = reg.get_flag(FlagName::f_c);
+    if (!f_c)
+    {
+        uint16_t temp_imm_word = read_opcode_word(mem);
+        reg.set_register_word(RegisterName::r_pc, temp_imm_word);
+    }
+}
+
+// JP Z
+void Cpu::ex_jp_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    bool f_z = reg.get_flag(FlagName::f_z);
+    if (f_z)
+    {
+        uint16_t temp_imm_word = read_opcode_word();
+        reg.set_register_word(RegisterName::r_pc, temp_imm_word);
+    }
+}
+
+// JP C
+void Cpu::ex_jp_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    bool f_c = reg.get_flag(FlagName::f_c);
+    if (f_c)
+    {
+        uint16_t temp_imm_word = read_opcode_word();
+        reg.set_register_word(RegisterName::r_pc, temp_imm_word);
+    }
+}
+
+// JP (HL)
+void Cpu::ex_jp_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
+    reg.set_register_word(RegisterName::r_pc, temp_r_hl_word);
 }
 
 // RET NZ
@@ -1328,6 +1442,41 @@ void Cpu::ex_rst_30(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix
     reg.set_register_word(RegisterName::r_pc, 0x0030);
 }
 
+// RST 0x08
+void Cpu::ex_rst_08(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
+    stack_add(mem, temp_r_pc_word);
+
+    reg.set_register_word(RegisterName::r_pc, 0x0008);
+}
+
+// RST 0x18
+void Cpu::ex_rst_18(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{   uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
+    stack_add(mem, temp_r_pc_word);
+
+    reg.set_register_word(RegisterName::r_pc, 0x0018);
+}
+
+// RST 0X28
+void Cpu::ex_rst_28(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
+    stack_add(mem, temp_r_pc_word);
+
+    reg.set_register_word(RegisterName::r_pc, 0x0028);
+}
+
+// RST 0X38
+void Cpu::ex_rst_38(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
+    stack_add(mem, temp_r_pc_word);
+
+    reg.set_register_word(RegisterName::r_pc, 0x0038);
+}
+
 // HALT
 void Cpu::ex_halt(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
@@ -1428,6 +1577,22 @@ void Cpu::ex_ld_hl_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_op
     reg.set_register_byte(to, temp_mem_byte);
 }
 
+ // LD (n) in memory to 8-bit A, n is 16-bit imm
+void Cpu::ex_ld_n_mem_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_imm_word = read_opcode_word(mem);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_imm_word);
+    reg.set_register_byte(RegisterName::r_a, temp_mem_byte);
+}
+
+// LD 8-bit A to (n) in memory, n is 16-bit imm
+void Cpu::ex_ld_byte_to_n_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    uint16_t temp_imm_word = read_opcode_word(mem);
+    mem.set_memory_byte(temp_imm_word, temp_r_a_byte);
+}
+
 // LDD: LD DEC
 // LDD 8-bit register A to (HL) in memory
 void Cpu::ex_ldd_byte_to_hl_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
@@ -1480,8 +1645,8 @@ void Cpu::ex_ld_byte_to_c_zp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opco
     uint8_t temp_r_c_byte = reg.get_register_byte(RegisterName::r_c);
     uint16_t temp_address_zp_word = temp_r_c_byte | 0xff00;
 
-    uint8_t temp_reg_byte = reg.get_register_byte(RegisterName::r_a);
-    mem.set_memory_byte(temp_address_zp_word, temp_reg_byte);
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    mem.set_memory_byte(temp_address_zp_word, temp_r_a_byte);
 }
 
 // LD (C) in zero page to 8-bit Register A
@@ -1490,8 +1655,27 @@ void Cpu::ex_ld_c_zp_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opco
     uint8_t temp_r_c_byte = reg.get_register_byte(RegisterName::r_c);
     uint16_t temp_address_zp_word = temp_r_c_byte | 0xff00;
 
-    uint8_t temp_reg_byte = mem.get_memory_byte(temp_address_zp_word);
-    reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_address_zp_word);
+    reg.set_register_byte(RegisterName::r_a, temp_mem_byte);
+}
+
+// LDH 8-bit A to (n) in zero page, n is 8-bit imm
+void Cpu::ex_ldh_byte_to_n_zp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    uint16_t temp_address_zp_word = temp_imm_byte | 0xff00;
+
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    mem.set_memory_byte(temp_address_zp_word, temp_r_a_byte);
+}
+// LDH (n) in zero page to 8-bit A, n is 8-bit imm
+void Cpu::ex_ldh_n_zp_to_byte(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint8_t temp_imm_byte = read_opcode_byte(mem);
+    uint16_t temp_address_zp_word = temp_imm_byte | 0xff00;
+
+    uint8_t temp_mem_byte = mem.get_memory_byte(temp_address_zp_word);
+    reg.set_register_byte(RegisterName::r_a, temp_mem_byte);
 }
 
 // 16-bit LD
