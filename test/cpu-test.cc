@@ -1,6 +1,7 @@
 #include "../src/cpu.h"
 #include "../src/register.h"
 #include "../src/memory.h"
+#include "../src/cpu.h"
 #include <iostream>
 
 //No need to test ex_

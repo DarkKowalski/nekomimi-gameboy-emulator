@@ -5,7 +5,7 @@
 // Exact Allocation are as FF40 Bit 6, Bit 3, Bit 2
 
 // OAM Entry from 0xFE00 to 0xFE9F
-// 20*8 bytes
+// 40*4 bytes
 
 // 4 modes
 // FF41 bit 1-0
@@ -15,11 +15,13 @@
 // For interrupts
 
 // FF0F     Interrupt Flag (IF) (Read/Write)
-// bit 0    V-Blank  Priority==1 (highest)   Start Address==$0040
+// bit 0    V-Blank     Priority==1 (highest)   Start Address==$0040
+// bit 1    LCDC Status Priority==2             Start Address==$0048
 
 // FFFF     Interrupt Enable (IE) (Read/Write)
 
 // bit 0    V-Blank
+// bit 1    LCDC (see STAT)
 //          0:disable           1:enable
 
 // Video
@@ -72,9 +74,11 @@
 
 // FF42 Scroll Y (SCY) (Read/Write)
 // 8 Bit value $00-$FF to scroll BG Y screen position.
+// In pixels! (how much pixels should we move the output down)
 
 // FF43 Scroll X (SCX) (Read/Write)
 // 8 Bit value $00-$FF to scroll BG X screen position.
+// In pixels! (how much pixels should we move the output to the right)
 
 // FF44 LCDC Y-Coordinate (LY) (Read Only)
 // The LY indicates the vertical line to which *the present data* is transferred to the LCD Driver.
@@ -136,15 +140,20 @@
 
 
 // Get binary digit from a uint16_t
-// position 1 is lowest digit (Bit 0)
+// position 0 is lowest digit (Bit 0)
 uint8_t GetBinaryDigit(uint16_t source, uint8_t position);
+
+// change binary bits from a uint16_t
+// change position in source to value
+uint16_t ChangeBinaryDigit(uint16_t source, uint8_t position, uint8_t value);
 
 // mix tile colors
 // eg: first line in first liine is 00000010 (02) ,
 //     second line in first line is 11111111 (FF)
 // we will get 01 01 01 01 01 01 11 01,
-// that is 11111131
-uint8_t MixBinaryDigit(uint16_t source_one, uint8_t source_two);
+// which is 11111131
+// this function returns 0, 1, 2, 3 for each query
+uint8_t MixTileDigit(uint8_t source_one, uint8_t source_two, uint8_t position);
 
 
 namespace gameboy
@@ -155,6 +164,9 @@ class PPU
 public:
 
     // functions declaration begin
+
+    // Main loop
+    void PPULoop(uint8_t clocks);
 
     // 4 modes
     // for each line in first 144 lines
@@ -167,6 +179,12 @@ public:
     // for last 10 lines * (20+43+51) clocks per line
     // there's VBlank
     void VBlank(void);
+
+    // in OAM and VRAM, in fact program has nothing to do
+	// in Hblank, program read each line's data and put them into screen buffer
+	// in Vblank, program fresh the screen and update screen buffer
+    // ↑ Maybe?
+    // Not my thoughts
 
     // set mode
     void SetMode(uint8_t mode);
@@ -186,14 +204,14 @@ public:
 
     // 4 flag modes
 
-    const uint8_t mode_OAM_Search = 2;
-    const uint8_t mode_DMA_Pixel_Transfer = 3;
-    const uint8_t mode_HBLANK = 0;
-    const uint8_t mode_VBLANK = 1;
+    const uint8_t mode_OAM_Search = 0x02;
+    const uint8_t mode_DMA_Pixel_Transfer = 0x03;
+    const uint8_t mode_HBLANK = 0x00;
+    const uint8_t mode_VBLANK = 0x01;
 
     // register address
     // use gameboy::Memory.get_memory_byte(address)
-    // & Get0BinaryDigit(value)
+    // & GetBinaryDigit(source, position)
 
     const uint16_t LCDC_Address = 0xFF40;
     const uint16_t STAT_Address = 0xFF41;
@@ -224,8 +242,8 @@ public:
 
     // Register (refresh every time using RefreshVideoRegisters(void))
 
-    uint8_t LCDC[8]=0;
-    uint8_t STAT[8]=0;
+    uint8_t LCDC=0;// 8 DIGITS
+    uint8_t STAT=0;// 8 DIGITS
     uint8_t SCY=0;
     uint8_t SCX=0;
     uint8_t LY=0;
@@ -233,9 +251,6 @@ public:
     uint8_t DMA=0;
     uint8_t IE=0;
     uint8_t IF=0;
-
-    // OAM Entry
-    uint8_t OAM_entry[20][8] = 0;
 
     // BG Buffer (256*256)
     uint8_t background_buffer[256][256] = 0;
@@ -250,18 +265,19 @@ public:
         // Add AddClocks time to inner clocks
         void AddTime(int AddClocks);
 
-        // reset interrupt registers
+        // reset interrupt registers (IF)
         void ResetInterruptRegisters(void);
 
     };
 
     // Sprite Info in OAM Entry
-    class SpriteInfo
+    struct Sprite
     {
         // Byte 0
         // Y Position
         // Specifies the sprites vertical position on the screen (minus 16).
         // An off-screen value (for example, Y=0 or Y>=160) hides the sprite.
+        // 0x10 will put it right on the top of the screen
         uint8_t y_position = 0;
 
         // Byte 1
@@ -269,6 +285,7 @@ public:
         // Specifies the sprites horizontal position on the screen (minus 8).
         // An off-screen value (X=0 or X>=168) hides the sprite, but the sprite still affects the priority ordering.
         // A better way to hide a sprite is to set its Y-coordinate off-screen.
+        // 0x08 will put it right on the left edge of the screen
         uint8_t x_position = 0;
 
         // Byte 2
@@ -277,7 +294,7 @@ public:
         // In CGB Mode this could be either in VRAM Bank 0 or 1, depending on Bit 3 of the following byte.
         // In 8x16 mode, the lower bit of the tile number is ignored.
         // IE: the upper 8x8 tile is "NN AND FEh", and the lower 8x8 tile is "NN OR 01h".
-        uint8_t tile_number= 0;
+        uint8_t tile_number = 0;
 
         // Byte3 - Attributes/Flags:
         // Bit7   OBJ-to-BG Priority (0=OBJ Above BG, 1=OBJ Behind BG color 1-3)
@@ -289,19 +306,20 @@ public:
         // Bit2-0 Palette number  **CGB Mode Only**     (OBP0-7)
 
         // This is a GB, NOT CGB
-        // So there are only 4 flags
-        uint8_t attributes[4] = 0;
+        // So there are only 4 flags (attributes)
+        uint8_t attributes_priority = 0;
+        uint8_t attributes_y_flip = 0;
+        uint8_t attributes_x_flip = 0;
+        uint8_t attributes_palette_number = 0;
 
-        //SpriteInfo(uint8_t id);
-    };
+    }OAM_entry[40];
+
+    // OAM Entry
 
 private:
 
     // inner clock
     uint16_t gpu_inner_clock=0;
-
-    // current position in line
-    uint16_t current_line_clock=0;
 
 };
 } // namespace gameboy
