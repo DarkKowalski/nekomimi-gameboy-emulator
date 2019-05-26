@@ -12,7 +12,7 @@ class EmulatorForm
 public:
     //screen buffer
     //0~3 for 4 shades from darkest to brightest
-    uint32_t* screen_buffer [144][160] = 0; //160*144 screen size
+    uint32_t* screen_buffer [144][160] = {0}; //160*144 screen size
 
     //4 shades
     uint8_t shade_All[12] = {255,255,255,//Darkest (00)

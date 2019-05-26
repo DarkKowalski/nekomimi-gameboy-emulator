@@ -155,18 +155,20 @@ uint16_t ChangeBinaryDigit(uint16_t source, uint8_t position, uint8_t value);
 // this function returns 0, 1, 2, 3 for each query
 uint8_t MixTileDigit(uint8_t source_one, uint8_t source_two, uint8_t position);
 
+// whether this position is out of bound
+bool is_out_of_bound (uint8_t x, uint8_t y);
 
 namespace gameboy
 {
 
-class PPU
+class Ppu
 {
 public:
 
     // functions declaration begin
 
     // Main loop
-    void PPULoop(uint8_t clocks);
+    void PpuLoop(uint8_t clocks);
 
     // 4 modes
     // for each line in first 144 lines
@@ -259,8 +261,8 @@ public:
 
     //Class declaration begin
 
-    // PPU Clock
-    class PPUClock
+    // Ppu Clock
+    class PpuClock
     {
         // Add AddClocks time to inner clocks
         void AddTime(int AddClocks);
@@ -307,9 +309,9 @@ public:
 
         // This is a GB, NOT CGB
         // So there are only 4 flags (attributes)
-        uint8_t attributes_priority = 0;
-        uint8_t attributes_y_flip = 0;
-        uint8_t attributes_x_flip = 0;
+        bool attributes_priority = 0;
+        bool attributes_y_flip = 0;
+        bool attributes_x_flip = 0;
         uint8_t attributes_palette_number = 0;
 
     }OAM_entry[40];

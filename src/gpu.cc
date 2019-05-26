@@ -1,16 +1,20 @@
 #include "gpu.h"
-using namespace gameboy
+using namespace gameboy;
 
-    uint8_t GetBinaryDigit(uint16_t source, uint8_t position)
+uint8_t GetBinaryDigit(uint16_t source, uint8_t position)
 {
-return (source>>position)&1;
+    return (source>>position)&1;
 }
 
 uint16_t ChangeBinaryDigit(uint16_t source, uint8_t position, uint8_t value)
 {
-    return source^(-value^source)&(1<<position);
+    return ((source)^(-value^source)&(1<<position));
 }
 
+bool is_out_of_bound(uint8_t x, uint8_t y)
+{
+    return x < 0 && x >= 160 && y < 0 && y >= 144 ;
+}
 
 uint8_t MixTileDigit(uint8_t source_one, uint8_t source_two, uint8_t position)
 {
@@ -24,13 +28,13 @@ uint8_t MixTileDigit(uint8_t source_one, uint8_t source_two, uint8_t position)
 }
 
 
-void PPU::PPULoop(uint8_t clocks)
+void Ppu::PpuLoop(uint8_t clocks)
 {
-    PPU::PPUClock::ResetInterruptRegisters();
-    PPU::RefreshVideoRegisters();
+    Ppu::PpuClock::ResetInterruptRegisters();
+    Ppu::RefreshVideoRegisters();
 
     // sync with system clocks
-    PPU::PPUClock::AddTime(clocks);
+    Ppu::PpuClock::AddTime(clocks);
 
     // 1 clock == 4 dots
     // 0~20*4-1 (0~79) OAM Search
@@ -38,76 +42,76 @@ void PPU::PPULoop(uint8_t clocks)
     // (20+43)*4~(20+43+51)*4-1) (252~455) H-Blank
     // after 144 lines, we update the buffer and flush it to the screen
 
-    if (PPU::current_mode==PPU::mode_OAM_Search)
+    if (Ppu::current_mode==Ppu::mode_OAM_Search)
     {
-        if (PPU::gpu_inner_clock>=79)
+        if (Ppu::gpu_inner_clock>=79)
         {
-            PPU::gpu_inner_clock=PPU::gpu_inner_clock-79;
-            PPU::SetMode(PPU::mode_DMA_Pixel_Transfer);
-            PPU::OAMSearch();
+            Ppu::gpu_inner_clock=Ppu::gpu_inner_clock-79;
+            Ppu::SetMode(Ppu::mode_DMA_Pixel_Transfer);
+            Ppu::OAMSearch();
         }
 
     }
 
-    else if (PPU::current_mode==PPU::mode_DMA_Pixel_Transfer)
+    else if (Ppu::current_mode==Ppu::mode_DMA_Pixel_Transfer)
     {
-        if (PPU::gpu_inner_clock>=172)
+        if (Ppu::gpu_inner_clock>=172)
         {
-            PPU::gpu_inner_clock=PPU::gpu_inner_clock-172;
-            PPU::SetMode(PPU::mode_HBLANK);
-            PPU::PixelTransfer();
+            Ppu::gpu_inner_clock=Ppu::gpu_inner_clock-172;
+            Ppu::SetMode(Ppu::mode_HBLANK);
+            Ppu::PixelTransfer();
         }
 
     }
 
-    else if (PPU::current_mode==PPU::mode_HBLANK)
+    else if (Ppu::current_mode==Ppu::mode_HBLANK)
     {
-        if (PPU::gpu_inner_clock>=205)
+        if (Ppu::gpu_inner_clock>=205)
         {
-            PPU::gpu_inner_clock=PPU::gpu_inner_clock-205;
+            Ppu::gpu_inner_clock=Ppu::gpu_inner_clock-205;
 
-            PPU::HBlank();
+            Ppu::HBlank();
 
             // if LY >= 144 enter VBlank in next loop, flush buffer to screen now
-            if (PPU::LY>=144)
+            if (Ppu::LY>=144)
             {
-                PPU::SetMode(PPU::mode_VBLANK);
+                Ppu::SetMode(Ppu::mode_VBLANK);
                 EmulatorForm::RefreshSurface();
             }
 
             //if not, go on to next line
             else
             {
-                PPU::SetMode(PPU::mode_OAM_Search);
+                Ppu::SetMode(Ppu::mode_OAM_Search);
             }
 
         }
     }
-    else if (PPU::current_mode==PPU::mode_VBLANK)
+    else if (Ppu::current_mode==Ppu::mode_VBLANK)
     {
         // enter 10 lines of VBlank
-        if (PPU::gpu_inner_clock<4560)
+        if (Ppu::gpu_inner_clock<4560)
         {
-            PPU::VBlank();
+            Ppu::VBlank();
         }
 
         // when reach the end, move to OAM Search in the next loop
-        if (PPU::gpu_inner_clock>=4560)
+        if (Ppu::gpu_inner_clock>=4560)
         {
-            PPU::SetMode(PPU::mode_OAM_Search);
-            PPU::gpu_inner_clock=PPU::gpu_inner_clock-4560;
+            Ppu::SetMode(Ppu::mode_OAM_Search);
+            Ppu::gpu_inner_clock=Ppu::gpu_inner_clock-4560;
 
             // reset ly
-            PPU::LY=0;
-            Memory::set_memory_byte(PPU::LY_Address,PPU::LY);
+            Ppu::LY=0;
+            Memory::set_memory_byte(Ppu::LY_Address,Ppu::LY);
         }
     }
 
     // update LYC at the end of each loop
-    PPU::UpdateLYC();
+    Ppu::UpdateLYC();
 }
 
-void PPU::OAMSearch(void)
+void Ppu::OAMSearch(void)
 {
     // from 0xFE00 to 0xFE9F
     // 40 sprites
@@ -119,121 +123,122 @@ void PPU::OAMSearch(void)
     for (i=0; i<40; i++)
     {
         // Y position
-        PPU::OAM_entry[i].y_position=Memory::get_memory_byte(0xFE00+i*4);
+        Ppu::OAM_entry[i].y_position=Memory::get_memory_byte(0xFE00+i*4);
 
         // X position
-        PPU::OAM_entry[i].x_position=Memory::get_memory_byte(0xFE00+i*4+1);
+        Ppu::OAM_entry[i].x_position=Memory::get_memory_byte(0xFE00+i*4+1);
 
         // tile_number
-        PPU::OAM_entry[i].tile_number=Memory::get_memory_byte(0xFE00+i*4+2);
+        Ppu::OAM_entry[i].tile_number=Memory::get_memory_byte(0xFE00+i*4+2);
 
         // get attritube
         temp_attritube=Memory::get_memory_byte(0xFE00+i*4+3);
 
         // write 4 attributes
-        PPU::OAM_entry[i].attributes_priority=GetBinaryDigit(temp_attritube,7);
-        PPU::OAM_entry[i].attributes_y_flip=GetBinaryDigit(temp_attritube,6);
-        PPU::OAM_entry[i].attributes_x_flip=GetBinaryDigit(temp_attritube,5);
-        PPU::OAM_entry[i].attributes_palette_number=GetBinaryDigit(temp_attritube,4);
+        Ppu::OAM_entry[i].attributes_priority=GetBinaryDigit(temp_attritube,7);
+        Ppu::OAM_entry[i].attributes_y_flip=GetBinaryDigit(temp_attritube,6);
+        Ppu::OAM_entry[i].attributes_x_flip=GetBinaryDigit(temp_attritube,5);
+        Ppu::OAM_entry[i].attributes_palette_number=GetBinaryDigit(temp_attritube,4);
     }
 
     return;
 }
 
-void PPU::PixelTransfer(void)
+void Ppu::PixelTransfer(void)
 {
 
 }
 
-void PPU::HBlank(void)
+void Ppu::HBlank(void)
 {
     // get current line
-    PPU::RefreshVideoRegisters();
+    Ppu::RefreshVideoRegisters();
     // draw current line
-    PPU::DrawLine(PPU::LY);
+    Ppu::DrawLine(Ppu::LY);
 
     // write LY value into memory
-    PPU::LY++;
-    Memory::set_memory_byte(PPU::LY_Address,PPU::LY);
+    Ppu::LY++;
+    Memory::set_memory_byte(Ppu::LY_Address,Ppu::LY);
 }
 
-void PPU::VBlank(void)
+void Ppu::VBlank(void)
 {
-    PPU::LY=(PPU::gpu_inner_clock/456+144);
-    Memory::set_memory_byte(PPU::LY_Address,PPU::LY);
+    Ppu::LY=(Ppu::gpu_inner_clock/456+144);
+    Memory::set_memory_byte(Ppu::LY_Address,Ppu::LY);
 }
 
-void PPU::SetMode(uint8_t mode)
+void Ppu::SetMode(uint8_t mode)
 {
-    if (PPU::current_mode==mode)
+    if (Ppu::current_mode==mode)
     {
         return;
     }
-    PPU::current_mode=mode;
+    Ppu::current_mode=mode;
 
-    PPU::RefreshVideoRegisters();
+    Ppu::RefreshVideoRegisters();
 
     // change and write mode in STAT to registers
-    if (mode==PPU::mode_HBLANK)
+    if (mode==Ppu::mode_HBLANK)
     {
-        ChangeBinaryDigit(PPU::STAT,0,false);
-        ChangeBinaryDigit(PPU::STAT,1,false);
-        ChangeBinaryDigit(PPU::STAT,3,true);
-        ChangeBinaryDigit(PPU::STAT,4,false);
-        ChangeBinaryDigit(PPU::STAT,5,false);
+        ChangeBinaryDigit(Ppu::STAT,0,false);
+        ChangeBinaryDigit(Ppu::STAT,1,false);
+        ChangeBinaryDigit(Ppu::STAT,3,true);
+        ChangeBinaryDigit(Ppu::STAT,4,false);
+        ChangeBinaryDigit(Ppu::STAT,5,false);
     }
-    if (mode==PPU::mode_VBLANK)
+    if (mode==Ppu::mode_VBLANK)
     {
-        ChangeBinaryDigit(PPU::STAT,0,true);
-        ChangeBinaryDigit(PPU::STAT,1,false);
-        ChangeBinaryDigit(PPU::STAT,3,false);
-        ChangeBinaryDigit(PPU::STAT,4,true);
-        ChangeBinaryDigit(PPU::STAT,5,false);
+        ChangeBinaryDigit(Ppu::STAT,0,true);
+        ChangeBinaryDigit(Ppu::STAT,1,false);
+        ChangeBinaryDigit(Ppu::STAT,3,false);
+        ChangeBinaryDigit(Ppu::STAT,4,true);
+        ChangeBinaryDigit(Ppu::STAT,5,false);
     }
-    if (mode==PPU::mode_OAM_Search)
+    if (mode==Ppu::mode_OAM_Search)
     {
-        ChangeBinaryDigit(PPU::STAT,0,false);
-        ChangeBinaryDigit(PPU::STAT,1,true);
-        ChangeBinaryDigit(PPU::STAT,3,false);
-        ChangeBinaryDigit(PPU::STAT,4,false);
-        ChangeBinaryDigit(PPU::STAT,5,true);
+        ChangeBinaryDigit(Ppu::STAT,0,false);
+        ChangeBinaryDigit(Ppu::STAT,1,true);
+        ChangeBinaryDigit(Ppu::STAT,3,false);
+        ChangeBinaryDigit(Ppu::STAT,4,false);
+        ChangeBinaryDigit(Ppu::STAT,5,true);
     }
-    if (mode==PPU::mode_DMA_Pixel_Transfer)
+    if (mode==Ppu::mode_DMA_Pixel_Transfer)
     {
-        ChangeBinaryDigit(PPU::STAT,0,true);
-        ChangeBinaryDigit(PPU::STAT,1,true);
-        ChangeBinaryDigit(PPU::STAT,3,false);
-        ChangeBinaryDigit(PPU::STAT,4,false);
-        ChangeBinaryDigit(PPU::STAT,5,false);
+        ChangeBinaryDigit(Ppu::STAT,0,true);
+        ChangeBinaryDigit(Ppu::STAT,1,true);
+        ChangeBinaryDigit(Ppu::STAT,3,false);
+        ChangeBinaryDigit(Ppu::STAT,4,false);
+        ChangeBinaryDigit(Ppu::STAT,5,false);
     }
 
 
     // VBlank Interrupt
-    if (mode==PPU::mode_VBLANK)
+    if (mode==Ppu::mode_VBLANK)
     {
-        ChangeBinaryDigit(PPU::IF,0,true);
+        ChangeBinaryDigit(Ppu::IF,0,true);
     }
 
     // LCDC Interrupt
     // when in mode 0, 1, 2, or LY==LYC
-    if (GetBinaryDigit(PPU::STAT,5)+
-            GetBinaryDigit(PPU::STAT,4)+
-            GetBinaryDigit(PPU::STAT,3)+
-            GetBinaryDigit(PPU::STAT,2)>=1)
+    if (GetBinaryDigit(Ppu::STAT,5)+
+            GetBinaryDigit(Ppu::STAT,4)+
+            GetBinaryDigit(Ppu::STAT,3)+
+            GetBinaryDigit(Ppu::STAT,2)>=1)
     {
-        ChangeBinaryDigit(PPU::IF,1,true);
+        ChangeBinaryDigit(Ppu::IF,1,true);
     }
 
     // write back to memory
-    Memory::set_memory_byte(PPU::IF_Address,PPU::IF);
-    Memory::set_memory_byte(PPU::STAT_Address,PPU::STAT);
+    Memory::set_memory_byte(Ppu::IF_Address,Ppu::IF);
+    Memory::set_memory_byte(Ppu::STAT_Address,Ppu::STAT);
 
 }
 
-void PPU::DrawLine(uint8_t line_number_y)
+void Ppu::DrawLine(uint8_t line_number_y)
 {
     uint8_t i;
     uint8_t j;
+    int16_t k; // for k--
 
     // result of DrawLine, which will be sent to EmulatorForm::screen_buffer
     //uint8_t line_buffer[160] = 0;
@@ -249,13 +254,14 @@ void PPU::DrawLine(uint8_t line_number_y)
 
     // background according to SCY and SCX
     uint8_t background_buffer_cut[144][160] = 0 ;
+    uint8_t background_buffer_screen [144][160] = 0 ;
 
     if (line_number_y>=144)
     {
         return;
     }
 
-    PPU::RefreshVideoRegisters();
+    Ppu::RefreshVideoRegisters();
 
     // get background tile data address
     // 0: $8800-$97FF,  tile # ranging 0~255, #0 is 0x8800
@@ -270,7 +276,7 @@ void PPU::DrawLine(uint8_t line_number_y)
     // TILE_START_ADDRESS + j * 16 +(i-1) * 2 and TILE_START_ADDRESS + j*16 + (i-1) * 2 + 1
 
     // judge bit 4 in LCDC (BG & Windows Tile Data)
-    bool background_tile_data_address_flag = GetBinaryDigit(PPU::LCDC,4);
+    bool background_tile_data_address_flag = GetBinaryDigit(Ppu::LCDC,4);
 
     uint16_t background_tile_data_address_start = 0;
 
@@ -288,7 +294,7 @@ void PPU::DrawLine(uint8_t line_number_y)
     // 1: $9C00-$9FFF
 
     // judge bit 3 in LCDC (BG Tile Map Address)
-    bool background_tile_map_address_flag = GetBinaryDigit(PPU::LCDC,3);
+    bool background_tile_map_address_flag = GetBinaryDigit(Ppu::LCDC,3);
 
     uint16_t background_tile_map_address_start = 0;
 
@@ -302,7 +308,7 @@ void PPU::DrawLine(uint8_t line_number_y)
     }
 
     // judge bit 0 in LCDC (BG Enable)
-    bool render_background = GetBinaryDigit(PPU::LCDC,0);
+    bool render_background = GetBinaryDigit(Ppu::LCDC,0);
 
 
 
@@ -347,7 +353,7 @@ void PPU::DrawLine(uint8_t line_number_y)
 
         // for each line in tile, there're buffers for two bytes
         uint8_t tile_line_data_one=0;
-        uint8_t tile_line_date_two=0;
+        uint8_t tile_line_data_two=0;
 
         // for each line in tile, there's a buffer for us to put the mix result
         uint8_t tile_line_data[8]=0;
@@ -408,12 +414,20 @@ void PPU::DrawLine(uint8_t line_number_y)
     {
         for (j=0; j<160; j++)
         {
-            background_buffer_cut[j][i]=background_buffer[j+PPU::SCX][i+PPU::SCY];
+            background_buffer_cut[j][i]=background_buffer[j+Ppu::SCX][i+Ppu::SCY];
+        }
+    }
+
+    for (i=0; i<144; i++)
+    {
+        for (j=0; j<160; j++)
+        {
+            background_buffer_screen[j][i]=background_buffer_cut[j][i];
         }
     }
 
     // judge bit 5 in LCDC (Windows Enable)
-    bool Windows_enable = GetBinaryDigit(PPU::LCDC,5);
+    bool Windows_enable = GetBinaryDigit(Ppu::LCDC,5);
 
     if (Windows_enable)
     {
@@ -425,18 +439,16 @@ void PPU::DrawLine(uint8_t line_number_y)
     }
 
     // judge bit 0 in LCDC (OBJ Enable)
-    bool OBJ_enable = GetBinaryDigit(PPU::LCDC,1);
+    bool OBJ_enable = GetBinaryDigit(Ppu::LCDC,1);
 
     if (OBJ_enable)
     {
         // now we will render sprites
 
-        uint8_t current_line_in_sprite=0;
-
         uint8_t sprite_line_data_one=0;
         uint8_t sprite_line_data_two=0;
 
-        uint8_t sprite_id=0;
+        int16_t sprite_id=0;
 
 
 
@@ -447,99 +459,161 @@ void PPU::DrawLine(uint8_t line_number_y)
         // for each sprite
         // I treat all sprites as 8*8, regardless of OBJ Size.
         // TODO: fix it!
+        uint8_t sprite_tile_line_data[8]=0;
+        uint8_t sprite_tile_line_data_temp[8]=0;
+        uint8_t sprite_data[8][8];
 
-        // and i assume all sprites have data
-        // that is to say, all 40 entries have data
-        // TODO: I dont know what to do...
-        for (sprite_id=0;sprite_id<40;sprite_id++)
+
+        // for priority, draw 39 first, 0 last
+        for (sprite_id=39; sprite_id>=0; sprite_id--)
         {
             // as we have the OAM entry
             // first, if y_position==0 and x_position==0
             // we dont need to draw.
-            if (PPU::OAM_entry[i].y_position==0&&PPU::OAM_entry[i].x_position==0)
+            if (Ppu::OAM_entry[sprite_id].y_position==0&&Ppu::OAM_entry[sprite_id].x_position==0)
                 continue;
 
-
-
             // we read tile ID and cacluate the address
+            current_sprite_tile_address=sprite_tile_start_address+Ppu::OAM_entry[sprite_id].tile_number*0x10;
 
 
+            uint8_t current_line_in_sprite=0;
 
-
-            // be catious, the priority of the sprites is that #0 is highest, #39 is lowest
-            // TODO: Draw according to this priority
-
-
-
-            for (current_line_in_sprite=0;current_line_in_sprite<7;current_line_in_sprite++)
+            for (current_line_in_sprite=0; current_line_in_sprite<7; current_line_in_sprite++)
             {
-               // read line data
+                // read line data
                 sprite_line_data_one=Memory::get_memory_byte(current_sprite_tile_address+current_line_in_sprite*2);
                 sprite_line_data_two=Memory::get_memory_byte(current_sprite_tile_address+current_line_in_sprite*2+1);
 
                 // mix
                 for (i=0; i<8; i++)
                 {
-                    tile_line_data[i]=MixTileDigit(sprite_line_data_one,sprite_line_data_two,i);
+                    sprite_tile_line_data[i]=MixTileDigit(sprite_line_data_one,sprite_line_data_two,i);
                 }
 
                 // read each line and put 8 pixels into scrolled background buffer
+
+                // flip x: horizontally
+                if (Ppu::OAM_entry[sprite_id].attributes_x_flip)
+                {
+                    for (i=0; i<8; i++)
+                    {
+                        sprite_tile_line_data_temp[i]=sprite_tile_line_data[7-i];
+                        sprite_tile_line_data[i]=sprite_tile_line_data_temp[i];
+                    }
+                }
+                for (i=0 ; i<8; i++)
+                {
+                    sprite_data[current_line_in_sprite][i]=sprite_tile_line_data[i];
+                }
+
+            }
+            // flip y: vertically
+            if (Ppu::OAM_entry[sprite_id].attributes_y_flip)
+            {
+                for (i=0;i<4;i++)
+                {
+                    for (j=0;j<7;j++)
+                    {
+                        sprite_tile_line_data_temp[j]=sprite_data[i][j];
+                    }
+                    for (j=0;j<7;j++)
+                    {
+                        sprite_data[7-i][j]=sprite_data[i][j];
+                    }
+                    for (j=0;j<7;j++)
+                    {
+                        sprite_data[i][j]=sprite_tile_line_data_temp[j];
+                    }
+                }
             }
 
+            // render this sprite to scrolled screen buffer
+
+            // where should i start?
+            uint8_t sprite_pixel_position_x=0;
+            uint8_t sprite_pixel_position_y=0;
+
+            for (i=0;i<8;i++)
+            {
+                for (j=0;j<8;j++)
+                {
+                    sprite_pixel_position_x=Ppu::OAM_entry[sprite_id].x_position-0x08;
+                    sprite_pixel_position_y=Ppu::OAM_entry[sprite_id].y_position-0x10;
+                    if (is_out_of_bound(sprite_pixel_position_x,sprite_pixel_position_y))
+                    {
+                        continue;
+                    }
+
+                     // transparent
+                    if (sprite_data[i][j]==0)
+                        continue;
+
+                    // priority
+                    if (Ppu::OAM_entry[sprite_id].attributes_priority)
+                    {
+                        // draw under background
+                        if (background_buffer_cut[sprite_pixel_position_y][sprite_pixel_position_x]!=3)
+                        {
+                            background_buffer[sprite_pixel_position_y][sprite_pixel_position_x]=sprite_data[i][j];
+                        }
+                    }
+                    else
+                    {
+                        background_buffer[sprite_pixel_position_y][sprite_pixel_position_x]=sprite_data[i][j];
+                    }
+
+
+                }
+            }
 
         }
+        // send the line into EmulatorForm::screen_buffer
+        for (i=0; i<160; i++)
+        {
+            EmulatorForm::screen_buffer[line_number_y][i]=background_buffer_screen[line_number_y][i];
+        }
+
     }
 
-
-
-
-
-    // send the line into EmulatorForm::screen_buffer
-    for (i=0; i<160; i++)
+    void Ppu::UpdateLYC(void)
     {
-        EmulatorForm::screen_buffer[line_number_y][i]=background_buffer_cut[line_number_y][i];
+        // get current LY and LYC and STAT
+        Ppu::RefreshVideoRegisters();
+        // determine whether LY==LYC
+        ChangeBinaryDigit(Ppu::STAT,2,Ppu::LY==Ppu::LYC);
     }
 
-}
+    void Ppu::RefreshVideoRegisters(void)
+    {
+        Ppu::LCDC=Memory::get_memory_byte(Ppu::LCDC_Address);
+        Ppu::STAT=Memory::get_memory_byte(Ppu::STAT_Address);
+        Ppu::SCY=Memory::get_memory_byte(Ppu::SCY_Address);
+        Ppu::SCX=Memory::get_memory_byte(Ppu::SCX_Address);
+        Ppu::LY=Memory::get_memory_byte(Ppu::LY_Address);
+        Ppu::LYC=Memory::get_memory_byte(Ppu::LYC_Address);
+        Ppu::DMA=Memory::get_memory_byte(Ppu::DMA_Address);
+        Ppu::IE=Memory::get_memory_byte(Ppu::IE_Address);
+        Ppu::IF=Memory::get_memory_byte(Ppu::IF_Address);
+    }
 
-void PPU::UpdateLYC(void)
-{
-    // get current LY and LYC and STAT
-    PPU::RefreshVideoRegisters();
-    // determine whether LY==LYC
-    ChangeBinaryDigit(PPU::STAT,2,PPU::LY==PPU::LYC);
-}
+    void Ppu::PpuClock::AddTime(int AddClocks)
+    {
+        Ppu::gpu_inner_clock=Ppu::gpu_inner_clock+AddClocks;
+        return;
+    }
 
-void PPU::RefreshVideoRegisters(void)
-{
-    PPU::LCDC=Memory::get_memory_byte(PPU::LCDC_Address);
-    PPU::STAT=Memory::get_memory_byte(PPU::STAT_Address);
-    PPU::SCY=Memory::get_memory_byte(PPU::SCY_Address);
-    PPU::SCX=Memory::get_memory_byte(PPU::SCX_Address);
-    PPU::LY=Memory::get_memory_byte(PPU::LY_Address);
-    PPU::LYC=Memory::get_memory_byte(PPU::LYC_Address);
-    PPU::DMA=Memory::get_memory_byte(PPU::DMA_Address);
-    PPU::IE=Memory::get_memory_byte(PPU::IE_Address);
-    PPU::IF=Memory::get_memory_byte(PPU::IF_Address);
-}
+    void Ppu::PpuClock::ResetInterruptRegisters(void)
+    {
+        // get current flags
+        uint8_t all_interrupts=Memory::get_memory_byte(Ppu::IF_Address);
 
-void PPU::PPUClock::AddTime(int AddClocks)
-{
-    PPU::gpu_inner_clock=PPU::gpu_inner_clock+AddClocks;
-    return;
-}
+        // change bit 0 to 0 (V-Blank)
+        ChangeBinaryDigit(all_interrupts,0,0);
 
-void PPU::PPUClock::ResetInterruptRegisters(void)
-{
-    // get current flags
-    uint8_t all_interrupts=Memory::get_memory_byte(PPU::IF_Address);
+        // change bit 1 to 0 (LCDC Status)
+        ChangeBinaryDigit(all_interrupts,1,0);
 
-    // change bit 0 to 0 (V-Blank)
-    ChangeBinaryDigit(all_interrupts,0,0);
-
-    // change bit 1 to 0 (LCDC Status)
-    ChangeBinaryDigit(all_interrupts,1,0);
-
-    // write result to memory
-    Memory::set_memory_byte(PPU::IF_Address);
-}
+        // write result to memory
+        Memory::set_memory_byte(Ppu::IF_Address);
+    }
