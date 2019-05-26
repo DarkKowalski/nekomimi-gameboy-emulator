@@ -156,7 +156,7 @@ uint8_t Cpu::execute(Memory &mem)
 
     // Handle opcode (8-bit)
     // If opcode has 16 bits (prefix-cb), continue to handle rest 8 bits
-    handle_opcode_main[opcode_main](mem, opcode_main, opcode_prefix_cb);
+    (this->*handle_opcode_main[opcode_main])(mem, opcode_main, opcode_prefix_cb);
 
     // return cycles
     if (opcode_cycle_prefix_cb)
@@ -1241,7 +1241,7 @@ void Cpu::ex_jp_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
     bool f_z = reg.get_flag(FlagName::f_z);
     if (f_z)
     {
-        uint16_t temp_imm_word = read_opcode_word();
+        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1252,7 +1252,7 @@ void Cpu::ex_jp_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
     bool f_c = reg.get_flag(FlagName::f_c);
     if (f_c)
     {
-        uint16_t temp_imm_word = read_opcode_word();
+        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -2012,5 +2012,5 @@ void Cpu::ex_set_hl_mem(Memory &mem, uint8_t opcode_prefix_cb)
 void Cpu::ex_prefix_cb(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     ref_opcode_prefix_cb = read_opcode_byte(mem);
-    handle_opcode_prefix_cb[ref_opcode_prefix_cb](mem, ref_opcode_prefix_cb);
+    (this->*handle_opcode_prefix_cb[ref_opcode_prefix_cb])(mem, ref_opcode_prefix_cb);
 }

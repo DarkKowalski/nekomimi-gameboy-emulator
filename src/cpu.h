@@ -55,20 +55,569 @@ const uint8_t opcode_cycle_prefix_cb[256] = {
 
 struct PackedArgs
 {
+    PackedArgs(RegisterName from_0, RegisterName from_1, RegisterName to_0, RegisterName to_1, uint8_t bit):
+        arg_reg_from_0(from_0), arg_reg_from_1(from_1), arg_reg_to_0(to_0), arg_reg_to_1(to_1), arg_bit(bit) {}
     RegisterName arg_reg_from_0; // From / Self
     RegisterName arg_reg_from_1; // From (paried 8-bit register)
     RegisterName arg_reg_to_0; // To
     RegisterName arg_reg_to_1; // To (paired 8-bit register)
 
-    FlagName arg_falg_0; // Flag
-    FlagName arg_falg_1; // Flag
-
     uint8_t arg_bit; // Bit for Prefix CB Opcodes
 };
 
-const PackedArgs opcode_args_main[256];
-const PackedArgs opcode_args_prefix_cb[256];
+// Arguments 
+#define NULLREG RegisterName::r_a
+#define NULLBIT 0
+#define NULLARG PackedArgs(RegisterName::r_a, RegisterName::r_a, RegisterName::r_a, RegisterName::r_a, 0)
+// Main
+const PackedArgs opcode_args_main[256] = 
+{   // arg_reg_from_0, arg_reg_from_1, arg_reg_to_0, arg_reg_to_1, arg_bit
+    NULLARG, // 0x00 null
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_b, RegisterName::r_c, NULLBIT), //0x01 to BC
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_b, RegisterName::r_c, NULLBIT), //0x02 to BC
+    PackedArgs(RegisterName::r_b, RegisterName::r_c, NULLREG, NULLREG, NULLBIT), // 0x03 self BC
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x04 self B
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x05 self B
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x06 to B
+    NULLARG, // 0x07 null
+    NULLARG, // 0x08 null
+    PackedArgs(RegisterName::r_b, RegisterName::r_c, NULLREG, NULLREG, NULLBIT), // 0x09 from BC
+    PackedArgs(RegisterName::r_b, RegisterName::r_c, NULLREG, NULLREG, NULLBIT), // 0x0a from BC
+    PackedArgs(RegisterName::r_b, RegisterName::r_c, NULLREG, NULLREG, NULLBIT), // 0x0b self BC
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0c self C
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0d self C
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x0e to C
+    NULLARG, // 0x0f null
 
+    NULLARG, // 0x10 null
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_d, RegisterName::r_e, NULLBIT), // 0x11 to DE
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_d, RegisterName::r_e, NULLBIT), // 0x12 to DE
+    PackedArgs(RegisterName::r_d, RegisterName::r_e, NULLREG, NULLREG, NULLBIT), // 0x13 self DE
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x14 self D
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x15 self D
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x16 to D
+    NULLARG, // 0x17 null
+    NULLARG, // 0x18 null
+    PackedArgs(RegisterName::r_d, RegisterName::r_e, NULLREG, NULLREG, NULLBIT), // 0x19 from DE
+    PackedArgs(RegisterName::r_d, RegisterName::r_e, NULLREG, NULLREG, NULLBIT), // 0x1a from DE
+    PackedArgs(RegisterName::r_d, RegisterName::r_e, NULLREG, NULLREG, NULLBIT), // 0X1b self DE
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1c self E
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1d self E
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x1e to E
+    NULLARG, // 0x0f null
+
+    NULLARG, // 0x20 null
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_h, RegisterName::r_l, NULLBIT), // 0x21 to HL
+    NULLARG, // 0x22 null
+    PackedArgs(RegisterName::r_h, RegisterName::r_l, NULLREG, NULLREG, NULLBIT), // 0x23 self HL
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x24 self H
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x25 self H
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x26 to H
+    NULLARG, // 0x27 null
+    NULLARG, // 0x28 null
+    PackedArgs(RegisterName::r_h, RegisterName::r_l, NULLREG, NULLREG, NULLBIT), // 0x29 from HL
+    NULLARG, // 0x2a null
+    PackedArgs(RegisterName::r_h, RegisterName::r_l, NULLREG, NULLREG, NULLBIT), // 0x2b self HL
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2c self L
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2d self L
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x2e to L
+    NULLARG, // 0x2f null
+    
+    NULLARG, // 0x30 null
+    NULLARG, // 0x31 null
+    NULLARG, // 0x32 null
+    NULLARG, // 0x33 null
+    NULLARG, // 0x34 null
+    NULLARG, // 0x35 null
+    NULLARG, // 0x36 null
+    NULLARG, // 0x37 null
+    NULLARG, // 0x38 null
+    NULLARG, // 0x39 null
+    NULLARG, // 0x3a null
+    NULLARG, // 0x3b null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3c self A
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3d self A
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x3e to A
+    NULLARG, // 0x3f
+
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x40 from B to B
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x41 from C to B
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x42 from D to B
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x43 from E to B
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x44 from H to B
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x45 from L to B
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x46 to B
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_b, NULLREG, NULLBIT), // 0x47 from A to B
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x48 from B to C
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x49 from C to C
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x4a from D to C
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x4b from E to C
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x4c from H to C
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x4d from L to C
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x4e to C
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_c, NULLREG, NULLBIT), // 0x4f from A to C
+
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x50 from B to D
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x51 from C to D
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x52 from D to D
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x53 from E to D
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x54 from H to D
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x55 from L to D
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x56 to D
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_d, NULLREG, NULLBIT), // 0x57 from A to D
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x58 from B to E
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x59 from C to E
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x5a from D to E
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x5b from E to E
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x5c from H to E
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x5d from L to E
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x5e to E
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_e, NULLREG, NULLBIT), // 0x5f from A to E
+
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x60 from B to H
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x61 from C to H
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x62 from D to H
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x63 from E to H
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x64 from H to H
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x65 from L to H
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x66 to H
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_h, NULLREG, NULLBIT), // 0x67 from A to H
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x68 from B to L
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x69 from C to L
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x6a from D to L
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x6b from E to L
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x6c from H to L
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x6d from L to L
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x6e to L
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_l, NULLREG, NULLBIT), // 0x6f from A to L
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x70 from B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x71 from C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x72 from D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x73 from E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x74 from H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x75 from L
+    NULLARG, // 0x76 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x77 from A
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x78 from B to A
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x79 from C to A
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x7a from D to A
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x7b from E to A
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x7c from H to A
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x7d from L to A
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x7e to A
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x7f from A to A
+
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x80 from B to A
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x81 from C to A
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x82 from D to A
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x83 from E to A
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x84 from H to A
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x85 from L to A
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x86 to A
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x87 from A to A
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x88 from B to A
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x89 from C to A
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x8a from D to A
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x8b from E to A
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x8c from H to A
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x8d from L to A
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x8e to A
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x8f from A to A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x90 from B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x91 from C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x92 from D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x93 from E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x94 from H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x95 from L
+    NULLARG, // 0x96 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x97 from A
+    PackedArgs(RegisterName::r_b, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x98 from B to A
+    PackedArgs(RegisterName::r_c, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x99 from C to A
+    PackedArgs(RegisterName::r_d, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x9a from D to A
+    PackedArgs(RegisterName::r_e, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x9b from E to A
+    PackedArgs(RegisterName::r_h, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x9c from H to A
+    PackedArgs(RegisterName::r_l, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x9d from L to A
+    PackedArgs(NULLREG, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x9e to A
+    PackedArgs(RegisterName::r_a, NULLREG, RegisterName::r_a, NULLREG, NULLBIT), // 0x9f from A to A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa0 from B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa1 from C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa2 from D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa3 from E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa4 from H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa5 from L
+    NULLARG, // 0xa6 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa7 from A
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa8 from B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xa9 from C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xaa from D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xab from E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xac from H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xad from L
+    NULLARG, // 0xae null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xaf from A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb0 from B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb1 from C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb2 from D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb3 from E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb4 from H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb5 from L
+    NULLARG, // 0xb6 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb7 from A
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb8 from B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xb9 from C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xba from D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xbb from E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xbc from H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xbd from L
+    NULLARG, // 0xbe null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0xbf from A
+
+    NULLARG, // 0xc0 null
+    PackedArgs(RegisterName::r_b, RegisterName::r_c, NULLREG, NULLREG, NULLBIT), // 0xc1 self BC
+    NULLARG, // 0xc2 null
+    NULLARG, // 0xc3 null
+    NULLARG, // 0xc4 null
+    PackedArgs(RegisterName::r_b, RegisterName::r_c, NULLREG, NULLREG, NULLBIT), // 0xc5 self BC
+    NULLARG, // 0xc6 null
+    NULLARG, // 0xc7 null
+    NULLARG, // 0xc8 null
+    NULLARG, // 0xc9 null
+    NULLARG, // 0xca null
+    NULLARG, // 0xcb null Prefix CB
+    NULLARG, // 0xcc null
+    NULLARG, // 0xcd null
+    NULLARG, // 0xce null
+    NULLARG, // 0xcf null
+
+    NULLARG, // 0xd0 null
+    PackedArgs(RegisterName::r_d, RegisterName::r_e, NULLREG, NULLREG, NULLBIT), // 0xd1 self DE
+    NULLARG, // 0xd2 null
+    NULLARG, // 0xd3 null
+    NULLARG, // 0xd4 null
+    PackedArgs(RegisterName::r_d, RegisterName::r_e, NULLREG, NULLREG, NULLBIT), // 0xd5 self DE
+    NULLARG, // 0xd6 null
+    NULLARG, // 0xd7 null
+    NULLARG, // 0xd8 null
+    NULLARG, // 0xd9 null
+    NULLARG, // 0xda null
+    NULLARG, // 0xdb null
+    NULLARG, // 0xdc null
+    NULLARG, // 0xdd null
+    NULLARG, // 0xde null
+    NULLARG, // 0xdf null
+
+    NULLARG, // 0xe0 null
+    PackedArgs(RegisterName::r_h, RegisterName::r_l, NULLREG, NULLREG, NULLBIT), // 0xe1 self HL
+    NULLARG, // 0xe2 null
+    NULLARG, // 0xe3 null
+    NULLARG, // 0xe4 null
+    PackedArgs(RegisterName::r_h, RegisterName::r_l, NULLREG, NULLREG, NULLBIT), // 0xe5 self HL
+    NULLARG, // 0xe6 null
+    NULLARG, // 0xe7 null
+    NULLARG, // 0xe8 null
+    NULLARG, // 0xe9 null
+    NULLARG, // 0xea null
+    NULLARG, // 0xeb null
+    NULLARG, // 0xec null
+    NULLARG, // 0xed null
+    NULLARG, // 0xee null
+    NULLARG, // 0xef null
+
+    NULLARG, // 0xf0 null
+    PackedArgs(RegisterName::r_a, RegisterName::r_f, NULLREG, NULLREG, NULLBIT), // 0xf1 self AF
+    NULLARG, // 0xf2 null
+    NULLARG, // 0xf3 null
+    NULLARG, // 0xf4 null
+    PackedArgs(RegisterName::r_a, RegisterName::r_f, NULLREG, NULLREG, NULLBIT), // 0xf5 self AF
+    NULLARG, // 0xf6 null
+    NULLARG, // 0xf7 null
+    NULLARG, // 0xf8 null
+    NULLARG, // 0xf9 null
+    NULLARG, // 0xfa null
+    NULLARG, // 0xfb null
+    NULLARG, // 0xfc null
+    NULLARG, // 0xfd null
+    NULLARG, // 0xfe null
+    NULLARG, // 0xff null
+};
+
+const PackedArgs opcode_args_prefix_cb[256] = 
+{   // arg_reg_from_0, arg_reg_from_1, arg_reg_to_0, arg_reg_to_1, arg_bit
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x00 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x01 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x02 self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x03 self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x04 self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x05 self L
+    NULLARG, // 0x06 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x07 self A
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x08 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x09 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0a self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0b self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0c self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0d self L
+    NULLARG, // 0x0e null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x0f self A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x10 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x11 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x12 self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x13 self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x14 self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x15 self L
+    NULLARG, // 0x16 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x17 self A
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x18 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x19 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1a self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1b self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1c self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1d self L
+    NULLARG, // 0x1e null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x1f self A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x20 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x21 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x22 self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x23 self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x24 self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x25 self L
+    NULLARG, // 0x26 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x27 self A
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x28 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x29 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2a self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2b self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2c self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2d self L
+    NULLARG, // 0x2e null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x2f self A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x30 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x31 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x32 self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x33 self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x34 self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x35 self L
+    NULLARG, // 0x36 null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x37 self A
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x38 self B
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x39 self C
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3a self D
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3b self E
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3c self H
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3d self L
+    NULLARG, // 0x3e null
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, NULLBIT), // 0x3f self A
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 0), // 0x40 self B bit 0
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 0), // 0x41 self C bit 0
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 0), // 0x42 self D bit 0
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 0), // 0x43 self E bit 0
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 0), // 0x44 self H bit 0
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 0), // 0x45 self L bit 0
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 0), // 0x46 bit 0
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 0), // 0x47 self A bit 0
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 1), // 0x48 self B bit 1
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 1), // 0x49 self C bit 1
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 1), // 0x4a self D bit 1
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 1), // 0x4b self E bit 1
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 1), // 0x4c self H bit 1
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 1), // 0x4d self L bit 1
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 1), // 0x4e bit 1
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 1), // 0x4f self A bit 1
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 2), // 0x50 self B bit 2
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 2), // 0x51 self C bit 2
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 2), // 0x52 self D bit 2
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 2), // 0x53 self E bit 2
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 2), // 0x54 self H bit 2
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 2), // 0x55 self L bit 2
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 2), // 0x56 bit 2
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 2), // 0x57 self A bit 2
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 3), // 0x58 self B bit 3
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 3), // 0x59 self C bit 3
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 3), // 0x5a self D bit 3
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 3), // 0x5b self E bit 3
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 3), // 0x5c self H bit 3
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 3), // 0x5d self L bit 3
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 3), // 0x5e bit 3
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 3), // 0x5f self A bit 3
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 4), // 0x60 self B bit 4
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 4), // 0x61 self C bit 4
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 4), // 0x62 self D bit 4
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 4), // 0x63 self E bit 4
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 4), // 0x64 self H bit 4
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 4), // 0x65 self L bit 4
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 4), // 0x66 bit 4
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 4), // 0x67 self A bit 4
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 5), // 0x68 self B bit 5
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 5), // 0x69 self C bit 5
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 5), // 0x6a self D bit 5
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 5), // 0x6b self E bit 5
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 5), // 0x6c self H bit 5
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 5), // 0x6d self L bit 5
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 5), // 0x6e bit 5
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 5), // 0x6f self A bit 5
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 6), // 0x70 self B bit 6
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 6), // 0x71 self C bit 6
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 6), // 0x72 self D bit 6
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 6), // 0x73 self E bit 6
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 6), // 0x74 self H bit 6
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 6), // 0x75 self L bit 6
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 6), // 0x76 bit 6
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 6), // 0x77 self A bit 6
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 7), // 0x78 self B bit 7
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 7), // 0x79 self C bit 7
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 7), // 0x7a self D bit 7
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 7), // 0x7b self E bit 7
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 7), // 0x7c self H bit 7
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 7), // 0x7d self L bit 7
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 7), // 0x7e bit 7
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 7), // 0x7f self A bit 7
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 0), // 0x80 self B bit 0
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 0), // 0x81 self C bit 0
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 0), // 0x82 self D bit 0
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 0), // 0x83 self E bit 0
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 0), // 0x84 self H bit 0
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 0), // 0x85 self L bit 0
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 0), // 0x86 bit 0
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 0), // 0x87 self A bit 0
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 1), // 0x88 self B bit 1
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 1), // 0x89 self C bit 1
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 1), // 0x8a self D bit 1
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 1), // 0x8b self E bit 1
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 1), // 0x8c self H bit 1
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 1), // 0x8d self L bit 1
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 1), // 0x8e bit 1
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 1), // 0x8f self A bit 1
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 2), // 0x90 self B bit 2
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 2), // 0x91 self C bit 2
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 2), // 0x92 self D bit 2
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 2), // 0x93 self E bit 2
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 2), // 0x94 self H bit 2
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 2), // 0x95 self L bit 2
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 2), // 0x96 bit 2
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 2), // 0x97 self A bit 2
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 3), // 0x98 self B bit 3
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 3), // 0x99 self C bit 3
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 3), // 0x9a self D bit 3
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 3), // 0x9b self E bit 3
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 3), // 0x9c self H bit 3
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 3), // 0x9d self L bit 3
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 3), // 0x9e bit 3
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 3), // 0x9f self A bit 3
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 4), // 0xa0 self B bit 4
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 4), // 0xa1 self C bit 4
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 4), // 0xa2 self D bit 4
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 4), // 0xa3 self E bit 4
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 4), // 0xa4 self H bit 4
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 4), // 0xa5 self L bit 4
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 4), // 0xa6 bit 4
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 4), // 0xa7 self A bit 4
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 5), // 0xa8 self B bit 5
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 5), // 0xa9 self C bit 5
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 5), // 0xaa self D bit 5
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 5), // 0xab self E bit 5
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 5), // 0xac self H bit 5
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 5), // 0xad self L bit 5
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 5), // 0xae bit 5
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 5), // 0xaf self A bit 5
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 6), // 0xb0 self B bit 6
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 6), // 0xb1 self C bit 6
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 6), // 0xb2 self D bit 6
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 6), // 0xb3 self E bit 6
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 6), // 0xb4 self H bit 6
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 6), // 0xb5 self L bit 6
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 6), // 0xb6 bit 6
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 6), // 0xb7 self A bit 6
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 7), // 0xb8 self B bit 7
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 7), // 0xb9 self C bit 7
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 7), // 0xba self D bit 7
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 7), // 0xbb self E bit 7
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 7), // 0xbc self H bit 7
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 7), // 0xbd self L bit 7
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 7), // 0xbe bit 7
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 7), // 0xbf self A bit 7
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 0), // 0xc0 self B bit 0
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 0), // 0xc1 self C bit 0
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 0), // 0xc2 self D bit 0
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 0), // 0xc3 self E bit 0
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 0), // 0xc4 self H bit 0
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 0), // 0xc5 self L bit 0
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 0), // 0xc6 bit 0
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 0), // 0xc7 self A bit 0
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 1), // 0xc8 self B bit 1
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 1), // 0xc9 self C bit 1
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 1), // 0xca self D bit 1
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 1), // 0xcb self E bit 1
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 1), // 0xcc self H bit 1
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 1), // 0xcd self L bit 1
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 1), // 0xce bit 1
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 1), // 0xcf self A bit 1
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 2), // 0xd0 self B bit 2
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 2), // 0xd1 self C bit 2
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 2), // 0xd2 self D bit 2
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 2), // 0xd3 self E bit 2
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 2), // 0xd4 self H bit 2
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 2), // 0xd5 self L bit 2
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 2), // 0xd6 bit 2
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 2), // 0xd7 self A bit 2
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 3), // 0xd8 self B bit 3
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 3), // 0xd9 self C bit 3
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 3), // 0xda self D bit 3
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 3), // 0xdb self E bit 3
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 3), // 0xdc self H bit 3
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 3), // 0xdd self L bit 3
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 3), // 0xde bit 3
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 3), // 0xdf self A bit 3
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 4), // 0xe0 self B bit 4
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 4), // 0xe1 self C bit 4
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 4), // 0xe2 self D bit 4
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 4), // 0xe3 self E bit 4
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 4), // 0xe4 self H bit 4
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 4), // 0xe5 self L bit 4
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 4), // 0xe6 bit 4
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 4), // 0xe7 self A bit 4
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 5), // 0xe8 self B bit 5
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 5), // 0xe9 self C bit 5
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 5), // 0xea self D bit 5
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 5), // 0xeb self E bit 5
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 5), // 0xec self H bit 5
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 5), // 0xed self L bit 5
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 5), // 0xee bit 5
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 5), // 0xef self A bit 5
+
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 6), // 0xf0 self B bit 6
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 6), // 0xf1 self C bit 6
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 6), // 0xf2 self D bit 6
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 6), // 0xf3 self E bit 6
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 6), // 0xf4 self H bit 6
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 6), // 0xf5 self L bit 6
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 6), // 0xf6 bit 6
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 6), // 0xf7 self A bit 6
+    PackedArgs(RegisterName::r_b, NULLREG, NULLREG, NULLREG, 7), // 0xf8 self B bit 7
+    PackedArgs(RegisterName::r_c, NULLREG, NULLREG, NULLREG, 7), // 0xf9 self C bit 7
+    PackedArgs(RegisterName::r_d, NULLREG, NULLREG, NULLREG, 7), // 0xfa self D bit 7
+    PackedArgs(RegisterName::r_e, NULLREG, NULLREG, NULLREG, 7), // 0xfb self E bit 7
+    PackedArgs(RegisterName::r_h, NULLREG, NULLREG, NULLREG, 7), // 0xfc self H bit 7
+    PackedArgs(RegisterName::r_l, NULLREG, NULLREG, NULLREG, 7), // 0xfd self L bit 7
+    PackedArgs(NULLREG, NULLREG, NULLREG, NULLREG, 7), // 0xfe bit 7
+    PackedArgs(RegisterName::r_a, NULLREG, NULLREG, NULLREG, 7), // 0xff self A bit 7
 };
 
 class Cpu
@@ -79,556 +628,561 @@ class Cpu
     bool f_halted;
     bool f_enable_interrupts;
 
+    typedef void (Cpu::*func_handle_opcode_main)(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    typedef void (Cpu::*func_handle_opcode_prefix_cb)(Memory &mem, uint8_t opcode_prefix_cb);
     // Handle opcode operations
-    void (*handle_opcode_main[256])(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
-    void (*handle_opcode_prefix_cb[256])(Memory &mem, uint8_t opcode_prefix_cb);
+    func_handle_opcode_main handle_opcode_main[256];
+    func_handle_opcode_prefix_cb handle_opcode_prefix_cb[256];
 
-    // Function Table
-    // Main
-    *handle_opcode_main[0x00] = nullptr;
-    *handle_opcode_main[0x01] = ex_ld_imm_to_pair;
-    *handle_opcode_main[0x02] = ex_ld_byte_to_pair_mem;
-    *handle_opcode_main[0x03] = ex_inc_pair;
-    *handle_opcode_main[0x04] = ex_inc_byte;
-    *handle_opcode_main[0x05] = ex_dec_byte;
-    *handle_opcode_main[0x06] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x07] = ex_rlca;
-    *handle_opcode_main[0x08] = ex_ld_sp_to_mem;
-    *handle_opcode_main[0x09] = ex_add_pair_to_hl;
-    *handle_opcode_main[0x0a] = ex_ld_pair_mem_to_byte;
-    *handle_opcode_main[0x0b] = ex_dec_pair;
-    *handle_opcode_main[0x0c] = ex_inc_byte;
-    *handle_opcode_main[0x0d] = ex_dec_byte;
-    *handle_opcode_main[0x0e] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x0f] = ex_rrca;
+    Cpu()
+    {
+        // Function Table
+        // Main
+        handle_opcode_main[0x00] = nullptr;
+        handle_opcode_main[0x01] = &Cpu::ex_ld_imm_to_pair;
+        handle_opcode_main[0x02] = &Cpu::ex_ld_byte_to_pair_mem;
+        handle_opcode_main[0x03] = &Cpu::ex_inc_pair;
+        handle_opcode_main[0x04] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x05] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x06] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x07] = &Cpu::ex_rlca;
+        handle_opcode_main[0x08] = &Cpu::ex_ld_sp_to_mem;
+        handle_opcode_main[0x09] = &Cpu::ex_add_pair_to_hl;
+        handle_opcode_main[0x0a] = &Cpu::ex_ld_pair_mem_to_byte;
+        handle_opcode_main[0x0b] = &Cpu::ex_dec_pair;
+        handle_opcode_main[0x0c] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x0d] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x0e] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x0f] = &Cpu::ex_rrca;
 
-    *handle_opcode_main[0x10] = nullptr;
-    *handle_opcode_main[0x11] = ex_ld_imm_to_pair;
-    *handle_opcode_main[0x12] = ex_ld_byte_to_pair_mem;
-    *handle_opcode_main[0x13] = ex_inc_pair;
-    *handle_opcode_main[0x14] = ex_inc_byte;
-    *handle_opcode_main[0x15] = ex_dec_byte;
-    *handle_opcode_main[0x16] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x17] = ex_rla;
-    *handle_opcode_main[0x18] = ex_jr;
-    *handle_opcode_main[0x19] = ex_add_pair_to_hl;
-    *handle_opcode_main[0x1a] = ex_ld_pair_mem_to_byte;
-    *handle_opcode_main[0x1b] = ex_dec_pair;
-    *handle_opcode_main[0x1c] = ex_inc_byte;
-    *handle_opcode_main[0x1d] = ex_dec_byte;
-    *handle_opcode_main[0x1e] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x1f] = ex_rra;
+        handle_opcode_main[0x10] = nullptr;
+        handle_opcode_main[0x11] = &Cpu::ex_ld_imm_to_pair;
+        handle_opcode_main[0x12] = &Cpu::ex_ld_byte_to_pair_mem;
+        handle_opcode_main[0x13] = &Cpu::ex_inc_pair;
+        handle_opcode_main[0x14] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x15] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x16] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x17] = &Cpu::ex_rla;
+        handle_opcode_main[0x18] = &Cpu::ex_jr;
+        handle_opcode_main[0x19] = &Cpu::ex_add_pair_to_hl;
+        handle_opcode_main[0x1a] = &Cpu::ex_ld_pair_mem_to_byte;
+        handle_opcode_main[0x1b] = &Cpu::ex_dec_pair;
+        handle_opcode_main[0x1c] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x1d] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x1e] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x1f] = &Cpu::ex_rra;
 
-    *handle_opcode_main[0x20] = ex_jr_nz;
-    *handle_opcode_main[0x21] = ex_ld_imm_to_pair;
-    *handle_opcode_main[0x22] = ex_ldi_byte_to_hl_mem;
-    *handle_opcode_main[0x23] = ex_inc_pair;
-    *handle_opcode_main[0x24] = ex_inc_byte;
-    *handle_opcode_main[0x25] = ex_dec_byte;
-    *handle_opcode_main[0x26] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x27] = ex_daa_byte;
-    *handle_opcode_main[0x28] = ex_jr_z;
-    *handle_opcode_main[0x29] = ex_add_pair_to_hl;
-    *handle_opcode_main[0x2a] = ex_ldi_hl_mem_to_byte;
-    *handle_opcode_main[0x2b] = ex_dec_pair;
-    *handle_opcode_main[0x2c] = ex_inc_byte;
-    *handle_opcode_main[0x2d] = ex_dec_byte;
-    *handle_opcode_main[0x2e] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x2f] = ex_cpl_byte;
+        handle_opcode_main[0x20] = &Cpu::ex_jr_nz;
+        handle_opcode_main[0x21] = &Cpu::ex_ld_imm_to_pair;
+        handle_opcode_main[0x22] = &Cpu::ex_ldi_byte_to_hl_mem;
+        handle_opcode_main[0x23] = &Cpu::ex_inc_pair;
+        handle_opcode_main[0x24] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x25] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x26] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x27] = &Cpu::ex_daa_byte;
+        handle_opcode_main[0x28] = &Cpu::ex_jr_z;
+        handle_opcode_main[0x29] = &Cpu::ex_add_pair_to_hl;
+        handle_opcode_main[0x2a] = &Cpu::ex_ldi_hl_mem_to_byte;
+        handle_opcode_main[0x2b] = &Cpu::ex_dec_pair;
+        handle_opcode_main[0x2c] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x2d] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x2e] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x2f] = &Cpu::ex_cpl_byte;
 
-    *handle_opcode_main[0x30] = ex_jr_nc;
-    *handle_opcode_main[0x31] = ex_ld_imm_to_sp;
-    *handle_opcode_main[0x32] = ex_ldd_byte_to_hl_mem;
-    *handle_opcode_main[0x33] = ex_inc_sp;
-    *handle_opcode_main[0x34] = ex_inc_hl_mem;
-    *handle_opcode_main[0x35] = ex_dec_hl_mem;
-    *handle_opcode_main[0x36] = ex_ld_imm_to_hl_mem;
-    *handle_opcode_main[0x37] = ex_scf_byte;
-    *handle_opcode_main[0x38] = ex_jr_c;
-    *handle_opcode_main[0x39] = ex_add_sp_to_hl;
-    *handle_opcode_main[0x3a] = ex_ldd_hl_mem_to_byte;
-    *handle_opcode_main[0x3b] = ex_dec_sp;
-    *handle_opcode_main[0x3c] = ex_inc_byte;
-    *handle_opcode_main[0x3d] = ex_dec_byte;
-    *handle_opcode_main[0x3e] = ex_ld_imm_to_byte;
-    *handle_opcode_main[0x3f] = ex_ccf_byte;
+        handle_opcode_main[0x30] = &Cpu::ex_jr_nc;
+        handle_opcode_main[0x31] = &Cpu::ex_ld_imm_to_sp;
+        handle_opcode_main[0x32] = &Cpu::ex_ldd_byte_to_hl_mem;
+        handle_opcode_main[0x33] = &Cpu::ex_inc_sp;
+        handle_opcode_main[0x34] = &Cpu::ex_inc_hl_mem;
+        handle_opcode_main[0x35] = &Cpu::ex_dec_hl_mem;
+        handle_opcode_main[0x36] = &Cpu::ex_ld_imm_to_hl_mem;
+        handle_opcode_main[0x37] = &Cpu::ex_scf_byte;
+        handle_opcode_main[0x38] = &Cpu::ex_jr_c;
+        handle_opcode_main[0x39] = &Cpu::ex_add_sp_to_hl;
+        handle_opcode_main[0x3a] = &Cpu::ex_ldd_hl_mem_to_byte;
+        handle_opcode_main[0x3b] = &Cpu::ex_dec_sp;
+        handle_opcode_main[0x3c] = &Cpu::ex_inc_byte;
+        handle_opcode_main[0x3d] = &Cpu::ex_dec_byte;
+        handle_opcode_main[0x3e] = &Cpu::ex_ld_imm_to_byte;
+        handle_opcode_main[0x3f] = &Cpu::ex_ccf_byte;
 
-    *handle_opcode_main[0x40] = ex_ld_byte;
-    *handle_opcode_main[0x41] = ex_ld_byte;
-    *handle_opcode_main[0x42] = ex_ld_byte;
-    *handle_opcode_main[0x43] = ex_ld_byte;
-    *handle_opcode_main[0x44] = ex_ld_byte;
-    *handle_opcode_main[0x45] = ex_ld_byte;
-    *handle_opcode_main[0x46] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x47] = ex_ld_byte;
-    *handle_opcode_main[0x48] = ex_ld_byte;
-    *handle_opcode_main[0x49] = ex_ld_byte;
-    *handle_opcode_main[0x4a] = ex_ld_byte;
-    *handle_opcode_main[0x4b] = ex_ld_byte;
-    *handle_opcode_main[0x4c] = ex_ld_byte;
-    *handle_opcode_main[0x4d] = ex_ld_byte;
-    *handle_opcode_main[0x4e] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x4f] = ex_ld_byte;
+        handle_opcode_main[0x40] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x41] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x42] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x43] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x44] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x45] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x46] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x47] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x48] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x49] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x4a] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x4b] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x4c] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x4d] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x4e] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x4f] = &Cpu::ex_ld_byte;
 
-    *handle_opcode_main[0x50] = ex_ld_byte;
-    *handle_opcode_main[0x51] = ex_ld_byte;
-    *handle_opcode_main[0x52] = ex_ld_byte;
-    *handle_opcode_main[0x53] = ex_ld_byte;
-    *handle_opcode_main[0x54] = ex_ld_byte;
-    *handle_opcode_main[0x55] = ex_ld_byte;
-    *handle_opcode_main[0x56] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x57] = ex_ld_byte;
-    *handle_opcode_main[0x58] = ex_ld_byte;
-    *handle_opcode_main[0x59] = ex_ld_byte;
-    *handle_opcode_main[0x5a] = ex_ld_byte;
-    *handle_opcode_main[0x5b] = ex_ld_byte;
-    *handle_opcode_main[0x5c] = ex_ld_byte;
-    *handle_opcode_main[0x5d] = ex_ld_byte;
-    *handle_opcode_main[0x5e] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x5f] = ex_ld_byte;
+        handle_opcode_main[0x50] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x51] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x52] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x53] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x54] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x55] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x56] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x57] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x58] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x59] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x5a] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x5b] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x5c] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x5d] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x5e] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x5f] = &Cpu::ex_ld_byte;
 
-    *handle_opcode_main[0x60] = ex_ld_byte;
-    *handle_opcode_main[0x61] = ex_ld_byte;
-    *handle_opcode_main[0x62] = ex_ld_byte;
-    *handle_opcode_main[0x63] = ex_ld_byte;
-    *handle_opcode_main[0x64] = ex_ld_byte;
-    *handle_opcode_main[0x65] = ex_ld_byte;
-    *handle_opcode_main[0x66] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x67] = ex_ld_byte;
-    *handle_opcode_main[0x68] = ex_ld_byte;
-    *handle_opcode_main[0x69] = ex_ld_byte;
-    *handle_opcode_main[0x6a] = ex_ld_byte;
-    *handle_opcode_main[0x6b] = ex_ld_byte;
-    *handle_opcode_main[0x6c] = ex_ld_byte;
-    *handle_opcode_main[0x6d] = ex_ld_byte;
-    *handle_opcode_main[0x6e] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x6f] = ex_ld_byte;
+        handle_opcode_main[0x60] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x61] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x62] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x63] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x64] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x65] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x66] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x67] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x68] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x69] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x6a] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x6b] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x6c] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x6d] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x6e] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x6f] = &Cpu::ex_ld_byte;
 
-    *handle_opcode_main[0x70] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x71] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x72] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x73] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x74] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x75] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x76] = ex_halt;
-    *handle_opcode_main[0x77] = ex_ld_byte_to_hl_mem;
-    *handle_opcode_main[0x78] = ex_ld_byte;
-    *handle_opcode_main[0x79] = ex_ld_byte;
-    *handle_opcode_main[0x7a] = ex_ld_byte;
-    *handle_opcode_main[0x7b] = ex_ld_byte;
-    *handle_opcode_main[0x7c] = ex_ld_byte;
-    *handle_opcode_main[0x7d] = ex_ld_byte;
-    *handle_opcode_main[0x7e] = ex_ld_hl_mem_to_byte;
-    *handle_opcode_main[0x7f] = ex_ld_byte;
+        handle_opcode_main[0x70] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x71] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x72] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x73] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x74] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x75] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x76] = &Cpu::ex_halt;
+        handle_opcode_main[0x77] = &Cpu::ex_ld_byte_to_hl_mem;
+        handle_opcode_main[0x78] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x79] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x7a] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x7b] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x7c] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x7d] = &Cpu::ex_ld_byte;
+        handle_opcode_main[0x7e] = &Cpu::ex_ld_hl_mem_to_byte;
+        handle_opcode_main[0x7f] = &Cpu::ex_ld_byte;
 
-    *handle_opcode_main[0x80] = ex_add_byte;
-    *handle_opcode_main[0x81] = ex_add_byte;
-    *handle_opcode_main[0x82] = ex_add_byte;
-    *handle_opcode_main[0x83] = ex_add_byte;
-    *handle_opcode_main[0x84] = ex_add_byte;
-    *handle_opcode_main[0x85] = ex_add_byte;
-    *handle_opcode_main[0x86] = ex_add_hl_mem;
-    *handle_opcode_main[0x87] = ex_add_byte;
-    *handle_opcode_main[0x88] = ex_adc_byte;
-    *handle_opcode_main[0x89] = ex_adc_byte;
-    *handle_opcode_main[0x8a] = ex_adc_byte;
-    *handle_opcode_main[0x8b] = ex_adc_byte;
-    *handle_opcode_main[0x8c] = ex_adc_byte;
-    *handle_opcode_main[0x8d] = ex_adc_byte
-    *handle_opcode_main[0x8e] = ex_adc_hl_mem;
-    *handle_opcode_main[0x8f] = ex_adc_byte;
+        handle_opcode_main[0x80] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x81] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x82] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x83] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x84] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x85] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x86] = &Cpu::ex_add_hl_mem;
+        handle_opcode_main[0x87] = &Cpu::ex_add_byte;
+        handle_opcode_main[0x88] = &Cpu::ex_adc_byte;
+        handle_opcode_main[0x89] = &Cpu::ex_adc_byte;
+        handle_opcode_main[0x8a] = &Cpu::ex_adc_byte;
+        handle_opcode_main[0x8b] = &Cpu::ex_adc_byte;
+        handle_opcode_main[0x8c] = &Cpu::ex_adc_byte;
+        handle_opcode_main[0x8d] = &Cpu::ex_adc_byte;
+        handle_opcode_main[0x8e] = &Cpu::ex_adc_hl_mem;
+        handle_opcode_main[0x8f] = &Cpu::ex_adc_byte;
 
-    *handle_opcode_main[0x90] = ex_sub_byte;
-    *handle_opcode_main[0x91] = ex_sub_byte;
-    *handle_opcode_main[0x92] = ex_sub_byte;
-    *handle_opcode_main[0x93] = ex_sub_byte;
-    *handle_opcode_main[0x94] = ex_sub_byte;
-    *handle_opcode_main[0x95] = ex_sub_byte;
-    *handle_opcode_main[0x96] = ex_sub_hl_mem;
-    *handle_opcode_main[0x97] = ex_sub_byte;
-    *handle_opcode_main[0x98] = ex_sbc_byte;
-    *handle_opcode_main[0x99] = ex_sbc_byte;
-    *handle_opcode_main[0x9a] = ex_sbc_byte;
-    *handle_opcode_main[0x9b] = ex_sbc_byte;
-    *handle_opcode_main[0x9c] = ex_sbc_byte;
-    *handle_opcode_main[0x9d] = ex_sbc_byte;
-    *handle_opcode_main[0x9e] = ex_sbc_hl_mem;
-    *handle_opcode_main[0x9f] = ex_sbc_byte;
+        handle_opcode_main[0x90] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x91] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x92] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x93] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x94] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x95] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x96] = &Cpu::ex_sub_hl_mem;
+        handle_opcode_main[0x97] = &Cpu::ex_sub_byte;
+        handle_opcode_main[0x98] = &Cpu::ex_sbc_byte;
+        handle_opcode_main[0x99] = &Cpu::ex_sbc_byte;
+        handle_opcode_main[0x9a] = &Cpu::ex_sbc_byte;
+        handle_opcode_main[0x9b] = &Cpu::ex_sbc_byte;
+        handle_opcode_main[0x9c] = &Cpu::ex_sbc_byte;
+        handle_opcode_main[0x9d] = &Cpu::ex_sbc_byte;
+        handle_opcode_main[0x9e] = &Cpu::ex_sbc_hl_mem;
+        handle_opcode_main[0x9f] = &Cpu::ex_sbc_byte;
 
-    *handle_opcode_main[0xa0] = ex_and_byte;
-    *handle_opcode_main[0xa1] = ex_and_byte;
-    *handle_opcode_main[0xa2] = ex_and_byte;
-    *handle_opcode_main[0xa3] = ex_and_byte;
-    *handle_opcode_main[0xa4] = ex_and_byte;
-    *handle_opcode_main[0xa5] = ex_and_byte;
-    *handle_opcode_main[0xa6] = ex_and_hl_mem;
-    *handle_opcode_main[0xa7] = ex_and_byte;
-    *handle_opcode_main[0xa8] = ex_xor_byte;
-    *handle_opcode_main[0xa9] = ex_xor_byte;
-    *handle_opcode_main[0xaa] = ex_xor_byte;
-    *handle_opcode_main[0xab] = ex_xor_byte;
-    *handle_opcode_main[0xac] = ex_xor_byte;
-    *handle_opcode_main[0xad] = ex_xor_byte;
-    *handle_opcode_main[0xae] = ex_xor_hl_mem;
-    *handle_opcode_main[0xaf] = ex_xor_byte;
+        handle_opcode_main[0xa0] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa1] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa2] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa3] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa4] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa5] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa6] = &Cpu::ex_and_hl_mem;
+        handle_opcode_main[0xa7] = &Cpu::ex_and_byte;
+        handle_opcode_main[0xa8] = &Cpu::ex_xor_byte;
+        handle_opcode_main[0xa9] = &Cpu::ex_xor_byte;
+        handle_opcode_main[0xaa] = &Cpu::ex_xor_byte;
+        handle_opcode_main[0xab] = &Cpu::ex_xor_byte;
+        handle_opcode_main[0xac] = &Cpu::ex_xor_byte;
+        handle_opcode_main[0xad] = &Cpu::ex_xor_byte;
+        handle_opcode_main[0xae] = &Cpu::ex_xor_hl_mem;
+        handle_opcode_main[0xaf] = &Cpu::ex_xor_byte;
 
-    *handle_opcode_main[0xb0] = ex_or_byte;
-    *handle_opcode_main[0xb1] = ex_or_byte;
-    *handle_opcode_main[0xb2] = ex_or_byte;
-    *handle_opcode_main[0xb3] = ex_or_byte;
-    *handle_opcode_main[0xb4] = ex_or_byte;
-    *handle_opcode_main[0xb5] = ex_or_byte;
-    *handle_opcode_main[0xb6] = ex_or_hl_mem;
-    *handle_opcode_main[0xb7] = ex_or_byte;
-    *handle_opcode_main[0xb8] = ex_cp_byte;
-    *handle_opcode_main[0xb9] = ex_cp_byte;
-    *handle_opcode_main[0xba] = ex_cp_byte;
-    *handle_opcode_main[0xbb] = ex_cp_byte;
-    *handle_opcode_main[0xbc] = ex_cp_byte;
-    *handle_opcode_main[0xbd] = ex_cp_byte;
-    *handle_opcode_main[0xbe] = ex_cp_hl_mem;
-    *handle_opcode_main[0xbf] = ex_cp_byte;
+        handle_opcode_main[0xb0] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb1] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb2] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb3] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb4] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb5] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb6] = &Cpu::ex_or_hl_mem;
+        handle_opcode_main[0xb7] = &Cpu::ex_or_byte;
+        handle_opcode_main[0xb8] = &Cpu::ex_cp_byte;
+        handle_opcode_main[0xb9] = &Cpu::ex_cp_byte;
+        handle_opcode_main[0xba] = &Cpu::ex_cp_byte;
+        handle_opcode_main[0xbb] = &Cpu::ex_cp_byte;
+        handle_opcode_main[0xbc] = &Cpu::ex_cp_byte;
+        handle_opcode_main[0xbd] = &Cpu::ex_cp_byte;
+        handle_opcode_main[0xbe] = &Cpu::ex_cp_hl_mem;
+        handle_opcode_main[0xbf] = &Cpu::ex_cp_byte;
 
-    *handle_opcode_main[0xc0] = ex_ret_nz;
-    *handle_opcode_main[0xc1] = ex_pop_pair;
-    *handle_opcode_main[0xc2] = ex_jp_nz;
-    *handle_opcode_main[0xc3] = ex_jp;
-    *handle_opcode_main[0xc4] = ex_call_nz;
-    *handle_opcode_main[0xc5] = ex_push_pair;
-    *handle_opcode_main[0xc6] = ex_add_imm;
-    *handle_opcode_main[0xc7] = ex_rst_00;
-    *handle_opcode_main[0xc8] = ex_ret_z;
-    *handle_opcode_main[0xc9] = ex_ret;
-    *handle_opcode_main[0xca] = ex_jp_z;
-    *handle_opcode_main[0xcb] = ex_prefix_cb; // Prefix CB
-    *handle_opcode_main[0xcc] = ex_call_z;
-    *handle_opcode_main[0xcd] = ex_call;
-    *handle_opcode_main[0xce] = ex_adc_imm;
-    *handle_opcode_main[0xcf] = ex_rst_08;
+        handle_opcode_main[0xc0] = &Cpu::ex_ret_nz;
+        handle_opcode_main[0xc1] = &Cpu::ex_pop_pair;
+        handle_opcode_main[0xc2] = &Cpu::ex_jp_nz;
+        handle_opcode_main[0xc3] = &Cpu::ex_jp;
+        handle_opcode_main[0xc4] = &Cpu::ex_call_nz;
+        handle_opcode_main[0xc5] = &Cpu::ex_push_pair;
+        handle_opcode_main[0xc6] = &Cpu::ex_add_imm;
+        handle_opcode_main[0xc7] = &Cpu::ex_rst_00;
+        handle_opcode_main[0xc8] = &Cpu::ex_ret_z;
+        handle_opcode_main[0xc9] = &Cpu::ex_ret;
+        handle_opcode_main[0xca] = &Cpu::ex_jp_z;
+        handle_opcode_main[0xcb] = &Cpu::ex_prefix_cb; // Prefix CB
+        handle_opcode_main[0xcc] = &Cpu::ex_call_z;
+        handle_opcode_main[0xcd] = &Cpu::ex_call;
+        handle_opcode_main[0xce] = &Cpu::ex_adc_imm;
+        handle_opcode_main[0xcf] = &Cpu::ex_rst_08;
 
-    *handle_opcode_main[0xd0] = ex_ret_nc;
-    *handle_opcode_main[0xd1] = ex_pop_pair;
-    *handle_opcode_main[0xd2] = ex_jp_nc;
-    *handle_opcode_main[0xd3] = nullptr;
-    *handle_opcode_main[0xd4] = ex_call_nc;
-    *handle_opcode_main[0xd5] = ex_push_pair;
-    *handle_opcode_main[0xd6] = ex_sub_imm;
-    *handle_opcode_main[0xd7] = ex_rst_10;
-    *handle_opcode_main[0xd8] = ex_ret_c;
-    *handle_opcode_main[0xd9] = ex_reti;
-    *handle_opcode_main[0xda] = ex_jp_c;
-    *handle_opcode_main[0xdb] = nullptr;
-    *handle_opcode_main[0xdc] = ex_call_c;
-    *handle_opcode_main[0xdd] = nullptr;
-    *handle_opcode_main[0xde] = ex_sbc_imm;
-    *handle_opcode_main[0xdf] = ex_rst_18;
+        handle_opcode_main[0xd0] = &Cpu::ex_ret_nc;
+        handle_opcode_main[0xd1] = &Cpu::ex_pop_pair;
+        handle_opcode_main[0xd2] = &Cpu::ex_jp_nc;
+        handle_opcode_main[0xd3] = nullptr;
+        handle_opcode_main[0xd4] = &Cpu::ex_call_nc;
+        handle_opcode_main[0xd5] = &Cpu::ex_push_pair;
+        handle_opcode_main[0xd6] = &Cpu::ex_sub_imm;
+        handle_opcode_main[0xd7] = &Cpu::ex_rst_10;
+        handle_opcode_main[0xd8] = &Cpu::ex_ret_c;
+        handle_opcode_main[0xd9] = &Cpu::ex_reti;
+        handle_opcode_main[0xda] = &Cpu::ex_jp_c;
+        handle_opcode_main[0xdb] = nullptr;
+        handle_opcode_main[0xdc] = &Cpu::ex_call_c;
+        handle_opcode_main[0xdd] = nullptr;
+        handle_opcode_main[0xde] = &Cpu::ex_sbc_imm;
+        handle_opcode_main[0xdf] = &Cpu::ex_rst_18;
 
-    *handle_opcode_main[0xe0] = ex_ldh_byte_to_n_zp;
-    *handle_opcode_main[0xe1] = ex_pop_pair;
-    *handle_opcode_main[0xe2] = ex_ld_byte_to_c_zp;
-    *handle_opcode_main[0xe3] = nullptr;
-    *handle_opcode_main[0xe4] = nullptr;
-    *handle_opcode_main[0xe5] = ex_push_pair;
-    *handle_opcode_main[0xe6] = ex_and_imm;
-    *handle_opcode_main[0xe7] = ex_rst_20;
-    *handle_opcode_main[0xe8] = ex_add_r8_to_sp;
-    *handle_opcode_main[0xe9] = ex_jp_hl;
-    *handle_opcode_main[0xea] = ex_ld_byte_to_n_mem;
-    *handle_opcode_main[0xeb] = nullptr;
-    *handle_opcode_main[0xec] = nullptr;
-    *handle_opcode_main[0xed] = nullptr;
-    *handle_opcode_main[0xee] = ex_xor_imm;
-    *handle_opcode_main[0xef] = ex_rst_28;
-    
-    *handle_opcode_main[0xf0] = ex_ldh_n_zp_to_byte;
-    *handle_opcode_main[0xf1] = ex_pop_pair;
-    *handle_opcode_main[0xf2] = ex_ld_c_zp_to_byte;
-    *handle_opcode_main[0xf3] = ex_di;
-    *handle_opcode_main[0xf4] = nullptr;
-    *handle_opcode_main[0xf5] = ex_push_pair;
-    *handle_opcode_main[0xf6] = ex_or_imm;
-    *handle_opcode_main[0xf7] = ex_rst_30;
-    *handle_opcode_main[0xf8] = ex_ld_sp_r8_to_hl;
-    *handle_opcode_main[0xf9] = ex_ld_hl_to_sp;
-    *handle_opcode_main[0xfa] = ex_ld_n_mem_to_byte;
-    *handle_opcode_main[0xfb] = ex_ei;
-    *handle_opcode_main[0xfc] = nullptr;
-    *handle_opcode_main[0xfd] = nullptr;
-    *handle_opcode_main[0xfe] = ex_cp_imm;
-    *handle_opcode_main[0xff] = ex_rst_38;
+        handle_opcode_main[0xe0] = &Cpu::ex_ldh_byte_to_n_zp;
+        handle_opcode_main[0xe1] = &Cpu::ex_pop_pair;
+        handle_opcode_main[0xe2] = &Cpu::ex_ld_byte_to_c_zp;
+        handle_opcode_main[0xe3] = nullptr;
+        handle_opcode_main[0xe4] = nullptr;
+        handle_opcode_main[0xe5] = &Cpu::ex_push_pair;
+        handle_opcode_main[0xe6] = &Cpu::ex_and_imm;
+        handle_opcode_main[0xe7] = &Cpu::ex_rst_20;
+        handle_opcode_main[0xe8] = &Cpu::ex_add_r8_to_sp;
+        handle_opcode_main[0xe9] = &Cpu::ex_jp_hl;
+        handle_opcode_main[0xea] = &Cpu::ex_ld_byte_to_n_mem;
+        handle_opcode_main[0xeb] = nullptr;
+        handle_opcode_main[0xec] = nullptr;
+        handle_opcode_main[0xed] = nullptr;
+        handle_opcode_main[0xee] = &Cpu::ex_xor_imm;
+        handle_opcode_main[0xef] = &Cpu::ex_rst_28;
+        
+        handle_opcode_main[0xf0] = &Cpu::ex_ldh_n_zp_to_byte;
+        handle_opcode_main[0xf1] = &Cpu::ex_pop_pair;
+        handle_opcode_main[0xf2] = &Cpu::ex_ld_c_zp_to_byte;
+        handle_opcode_main[0xf3] = &Cpu::ex_di;
+        handle_opcode_main[0xf4] = nullptr;
+        handle_opcode_main[0xf5] = &Cpu::ex_push_pair;
+        handle_opcode_main[0xf6] = &Cpu::ex_or_imm;
+        handle_opcode_main[0xf7] = &Cpu::ex_rst_30;
+        handle_opcode_main[0xf8] = &Cpu::ex_ld_sp_r8_to_hl;
+        handle_opcode_main[0xf9] = &Cpu::ex_ld_hl_to_sp;
+        handle_opcode_main[0xfa] = &Cpu::ex_ld_n_mem_to_byte;
+        handle_opcode_main[0xfb] = &Cpu::ex_ei;
+        handle_opcode_main[0xfc] = nullptr;
+        handle_opcode_main[0xfd] = nullptr;
+        handle_opcode_main[0xfe] = &Cpu::ex_cp_imm;
+        handle_opcode_main[0xff] = &Cpu::ex_rst_38;
 
-    // Prefix CB
-    *handle_opcode_prefix_cb[0x00] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x01] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x02] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x03] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x04] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x05] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x06] = ex_rlc_hl_mem;
-    *handle_opcode_prefix_cb[0x07] = ex_rlc_byte;
-    *handle_opcode_prefix_cb[0x08] = ex_rrc_byte;
-    *handle_opcode_prefix_cb[0x09] = ex_rrc_byte;
-    *handle_opcode_prefix_cb[0x0a] = ex_rrc_byte;
-    *handle_opcode_prefix_cb[0x0b] = ex_rrc_byte;
-    *handle_opcode_prefix_cb[0x0c] = ex_rrc_byte;
-    *handle_opcode_prefix_cb[0x0d] = ex_rrc_byte;
-    *handle_opcode_prefix_cb[0x0e] = ex_rrc_hl_mem;
-    *handle_opcode_prefix_cb[0x0f] = ex_rrc_byte;
+        // Prefix CB
+        handle_opcode_prefix_cb[0x00] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x01] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x02] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x03] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x04] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x05] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x06] = &Cpu::ex_rlc_hl_mem;
+        handle_opcode_prefix_cb[0x07] = &Cpu::ex_rlc_byte;
+        handle_opcode_prefix_cb[0x08] = &Cpu::ex_rrc_byte;
+        handle_opcode_prefix_cb[0x09] = &Cpu::ex_rrc_byte;
+        handle_opcode_prefix_cb[0x0a] = &Cpu::ex_rrc_byte;
+        handle_opcode_prefix_cb[0x0b] = &Cpu::ex_rrc_byte;
+        handle_opcode_prefix_cb[0x0c] = &Cpu::ex_rrc_byte;
+        handle_opcode_prefix_cb[0x0d] = &Cpu::ex_rrc_byte;
+        handle_opcode_prefix_cb[0x0e] = &Cpu::ex_rrc_hl_mem;
+        handle_opcode_prefix_cb[0x0f] = &Cpu::ex_rrc_byte;
 
-    *handle_opcode_prefix_cb[0x10] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x11] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x12] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x13] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x14] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x15] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x16] = ex_rl_hl_mem;
-    *handle_opcode_prefix_cb[0x17] = ex_rl_byte;
-    *handle_opcode_prefix_cb[0x18] = ex_rr_byte;
-    *handle_opcode_prefix_cb[0x19] = ex_rr_byte;
-    *handle_opcode_prefix_cb[0x1a] = ex_rr_byte;
-    *handle_opcode_prefix_cb[0x1b] = ex_rr_byte;
-    *handle_opcode_prefix_cb[0x1c] = ex_rr_byte;
-    *handle_opcode_prefix_cb[0x1d] = ex_rr_byte;
-    *handle_opcode_prefix_cb[0x1e] = ex_rr_hl_mem;
-    *handle_opcode_prefix_cb[0x1f] = ex_rr_byte;
+        handle_opcode_prefix_cb[0x10] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x11] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x12] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x13] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x14] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x15] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x16] = &Cpu::ex_rl_hl_mem;
+        handle_opcode_prefix_cb[0x17] = &Cpu::ex_rl_byte;
+        handle_opcode_prefix_cb[0x18] = &Cpu::ex_rr_byte;
+        handle_opcode_prefix_cb[0x19] = &Cpu::ex_rr_byte;
+        handle_opcode_prefix_cb[0x1a] = &Cpu::ex_rr_byte;
+        handle_opcode_prefix_cb[0x1b] = &Cpu::ex_rr_byte;
+        handle_opcode_prefix_cb[0x1c] = &Cpu::ex_rr_byte;
+        handle_opcode_prefix_cb[0x1d] = &Cpu::ex_rr_byte;
+        handle_opcode_prefix_cb[0x1e] = &Cpu::ex_rr_hl_mem;
+        handle_opcode_prefix_cb[0x1f] = &Cpu::ex_rr_byte;
 
-    *handle_opcode_prefix_cb[0x20] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x21] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x22] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x23] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x24] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x25] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x26] = ex_sla_hl_mem;
-    *handle_opcode_prefix_cb[0x27] = ex_sla_byte;
-    *handle_opcode_prefix_cb[0x28] = ex_sra_byte;
-    *handle_opcode_prefix_cb[0x29] = ex_sra_byte;
-    *handle_opcode_prefix_cb[0x2a] = ex_sra_byte;
-    *handle_opcode_prefix_cb[0x2b] = ex_sra_byte;
-    *handle_opcode_prefix_cb[0x2c] = ex_sra_byte;
-    *handle_opcode_prefix_cb[0x2d] = ex_sra_byte;
-    *handle_opcode_prefix_cb[0x2e] = ex_sra_hl_mem;
-    *handle_opcode_prefix_cb[0x2f] = ex_sra_byte;
+        handle_opcode_prefix_cb[0x20] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x21] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x22] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x23] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x24] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x25] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x26] = &Cpu::ex_sla_hl_mem;
+        handle_opcode_prefix_cb[0x27] = &Cpu::ex_sla_byte;
+        handle_opcode_prefix_cb[0x28] = &Cpu::ex_sra_byte;
+        handle_opcode_prefix_cb[0x29] = &Cpu::ex_sra_byte;
+        handle_opcode_prefix_cb[0x2a] = &Cpu::ex_sra_byte;
+        handle_opcode_prefix_cb[0x2b] = &Cpu::ex_sra_byte;
+        handle_opcode_prefix_cb[0x2c] = &Cpu::ex_sra_byte;
+        handle_opcode_prefix_cb[0x2d] = &Cpu::ex_sra_byte;
+        handle_opcode_prefix_cb[0x2e] = &Cpu::ex_sra_hl_mem;
+        handle_opcode_prefix_cb[0x2f] = &Cpu::ex_sra_byte;
 
-    *handle_opcode_prefix_cb[0x30] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x31] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x32] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x33] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x34] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x35] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x36] = ex_swap_hl_mem;
-    *handle_opcode_prefix_cb[0x37] = ex_swap_byte;
-    *handle_opcode_prefix_cb[0x38] = ex_srl_byte;
-    *handle_opcode_prefix_cb[0x39] = ex_srl_byte;
-    *handle_opcode_prefix_cb[0x3a] = ex_srl_byte;
-    *handle_opcode_prefix_cb[0x3b] = ex_srl_byte;
-    *handle_opcode_prefix_cb[0x3c] = ex_srl_byte;
-    *handle_opcode_prefix_cb[0x3d] = ex_srl_byte;
-    *handle_opcode_prefix_cb[0x3e] = ex_srl_hl_mem;
-    *handle_opcode_prefix_cb[0x3f] = ex_srl_byte;
-    
-    *handle_opcode_prefix_cb[0x40] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x41] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x42] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x43] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x44] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x45] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x46] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x47] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x48] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x49] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x4a] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x4b] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x4c] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x4d] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x4e] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x4f] = ex_bit_byte;
+        handle_opcode_prefix_cb[0x30] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x31] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x32] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x33] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x34] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x35] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x36] = &Cpu::ex_swap_hl_mem;
+        handle_opcode_prefix_cb[0x37] = &Cpu::ex_swap_byte;
+        handle_opcode_prefix_cb[0x38] = &Cpu::ex_srl_byte;
+        handle_opcode_prefix_cb[0x39] = &Cpu::ex_srl_byte;
+        handle_opcode_prefix_cb[0x3a] = &Cpu::ex_srl_byte;
+        handle_opcode_prefix_cb[0x3b] = &Cpu::ex_srl_byte;
+        handle_opcode_prefix_cb[0x3c] = &Cpu::ex_srl_byte;
+        handle_opcode_prefix_cb[0x3d] = &Cpu::ex_srl_byte;
+        handle_opcode_prefix_cb[0x3e] = &Cpu::ex_srl_hl_mem;
+        handle_opcode_prefix_cb[0x3f] = &Cpu::ex_srl_byte;
+        
+        handle_opcode_prefix_cb[0x40] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x41] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x42] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x43] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x44] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x45] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x46] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x47] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x48] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x49] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x4a] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x4b] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x4c] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x4d] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x4e] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x4f] = &Cpu::ex_bit_byte;
 
-    *handle_opcode_prefix_cb[0x50] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x51] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x52] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x53] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x54] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x55] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x56] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x57] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x58] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x59] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x5a] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x5b] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x5c] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x5d] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x5e] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x5f] = ex_bit_byte;
+        handle_opcode_prefix_cb[0x50] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x51] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x52] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x53] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x54] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x55] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x56] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x57] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x58] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x59] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x5a] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x5b] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x5c] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x5d] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x5e] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x5f] = &Cpu::ex_bit_byte;
 
-    *handle_opcode_prefix_cb[0x60] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x61] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x62] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x63] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x64] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x65] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x66] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x67] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x68] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x69] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x6a] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x6b] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x6c] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x6d] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x6e] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x6f] = ex_bit_byte;
+        handle_opcode_prefix_cb[0x60] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x61] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x62] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x63] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x64] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x65] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x66] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x67] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x68] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x69] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x6a] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x6b] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x6c] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x6d] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x6e] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x6f] = &Cpu::ex_bit_byte;
 
-    *handle_opcode_prefix_cb[0x70] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x71] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x72] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x73] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x74] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x75] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x76] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x77] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x78] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x79] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x7a] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x7b] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x7c] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x7d] = ex_bit_byte;
-    *handle_opcode_prefix_cb[0x7e] = ex_bit_hl_mem;
-    *handle_opcode_prefix_cb[0x7f] = ex_bit_byte;
+        handle_opcode_prefix_cb[0x70] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x71] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x72] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x73] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x74] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x75] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x76] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x77] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x78] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x79] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x7a] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x7b] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x7c] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x7d] = &Cpu::ex_bit_byte;
+        handle_opcode_prefix_cb[0x7e] = &Cpu::ex_bit_hl_mem;
+        handle_opcode_prefix_cb[0x7f] = &Cpu::ex_bit_byte;
 
-    *handle_opcode_prefix_cb[0x80] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x81] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x82] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x83] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x84] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x85] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x86] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0x87] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x88] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x89] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x8a] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x8b] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x8c] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x8d] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x8e] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0x8f] = ex_res_byte;
+        handle_opcode_prefix_cb[0x80] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x81] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x82] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x83] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x84] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x85] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x86] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0x87] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x88] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x89] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x8a] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x8b] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x8c] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x8d] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x8e] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0x8f] = &Cpu::ex_res_byte;
 
-    *handle_opcode_prefix_cb[0x90] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x91] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x92] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x93] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x94] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x95] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x96] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0x97] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x98] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x99] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x9a] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x9b] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x9c] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x9d] = ex_res_byte;
-    *handle_opcode_prefix_cb[0x9e] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0x9f] = ex_res_byte;
+        handle_opcode_prefix_cb[0x90] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x91] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x92] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x93] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x94] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x95] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x96] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0x97] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x98] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x99] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x9a] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x9b] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x9c] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x9d] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0x9e] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0x9f] = &Cpu::ex_res_byte;
 
-    *handle_opcode_prefix_cb[0xa0] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa1] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa2] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa3] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa4] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa5] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa6] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0xa7] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa8] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xa9] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xaa] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xab] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xac] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xad] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xae] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0xaf] = ex_res_byte;
+        handle_opcode_prefix_cb[0xa0] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa1] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa2] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa3] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa4] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa5] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa6] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0xa7] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa8] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xa9] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xaa] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xab] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xac] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xad] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xae] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0xaf] = &Cpu::ex_res_byte;
 
-    *handle_opcode_prefix_cb[0xb0] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb1] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb2] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb3] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb4] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb5] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb6] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0xb7] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb8] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xb9] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xba] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xbb] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xbc] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xbd] = ex_res_byte;
-    *handle_opcode_prefix_cb[0xbe] = ex_res_hl_mem;
-    *handle_opcode_prefix_cb[0xbf] = ex_res_byte;
+        handle_opcode_prefix_cb[0xb0] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb1] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb2] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb3] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb4] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb5] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb6] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0xb7] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb8] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xb9] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xba] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xbb] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xbc] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xbd] = &Cpu::ex_res_byte;
+        handle_opcode_prefix_cb[0xbe] = &Cpu::ex_res_hl_mem;
+        handle_opcode_prefix_cb[0xbf] = &Cpu::ex_res_byte;
 
-    *handle_opcode_prefix_cb[0xc0] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc1] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc2] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc3] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc4] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc5] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc6] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xc7] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc8] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xc9] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xca] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xcb] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xcc] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xcd] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xce] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xcf] = ex_set_byte;
+        handle_opcode_prefix_cb[0xc0] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc1] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc2] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc3] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc4] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc5] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc6] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xc7] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc8] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xc9] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xca] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xcb] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xcc] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xcd] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xce] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xcf] = &Cpu::ex_set_byte;
 
-    *handle_opcode_prefix_cb[0xd0] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd1] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd2] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd3] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd4] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd5] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd6] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xd7] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd8] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xd9] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xda] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xdb] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xdc] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xdd] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xde] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xdf] = ex_set_byte;
+        handle_opcode_prefix_cb[0xd0] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd1] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd2] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd3] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd4] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd5] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd6] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xd7] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd8] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xd9] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xda] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xdb] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xdc] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xdd] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xde] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xdf] = &Cpu::ex_set_byte;
 
-    *handle_opcode_prefix_cb[0xe0] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe1] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe2] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe3] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe4] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe5] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe6] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xe7] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe8] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xe9] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xea] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xeb] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xec] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xed] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xee] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xef] = ex_set_byte;
+        handle_opcode_prefix_cb[0xe0] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe1] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe2] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe3] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe4] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe5] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe6] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xe7] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe8] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xe9] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xea] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xeb] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xec] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xed] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xee] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xef] = &Cpu::ex_set_byte;
 
-    *handle_opcode_prefix_cb[0xf0] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf1] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf2] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf3] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf4] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf5] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf6] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xf7] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf8] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xf9] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xfa] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xfb] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xfc] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xfd] = ex_set_byte;
-    *handle_opcode_prefix_cb[0xfe] = ex_set_hl_mem
-    *handle_opcode_prefix_cb[0xff] = ex_set_byte;
+        handle_opcode_prefix_cb[0xf0] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf1] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf2] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf3] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf4] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf5] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf6] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xf7] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf8] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xf9] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xfa] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xfb] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xfc] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xfd] = &Cpu::ex_set_byte;
+        handle_opcode_prefix_cb[0xfe] = &Cpu::ex_set_hl_mem;
+        handle_opcode_prefix_cb[0xff] = &Cpu::ex_set_byte;
+    }
     // Initialize registers and flag status when power on
     Cpu &power_on();
 
