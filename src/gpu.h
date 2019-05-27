@@ -60,7 +60,6 @@
 // bit 3    Mode 0 H-Blank Interrupt
 //          0: Non Selection    1: Selection
 
-
 // bit 2    LYC=LY Flag
 //          0: LYC not equal to LCDC LY      1: LYC = LCDC LY
 
@@ -69,8 +68,6 @@
 //          01: During V-Blank
 //          10: During Searching OAM-RAM
 //          11: During Transfering Data to LCD Driver (DMA)
-
-
 
 // FF42 Scroll Y (SCY) (Read/Write)
 // 8 Bit value $00-$FF to scroll BG Y screen position.
@@ -86,15 +83,12 @@
 // The values between 144 and 153 indicate the V-Blank period.
 // Writing will reset the counter.
 
-
 // FF45 LY Compare (LYC) (Read/Write)
 // The LYC compares itself with the LY.
 // If the values are the same it causes the STAT to set the coincident flag.
 
-
 // FF46 DMA Transfer and Start (DMA) (Write)
 // DMA Transfer and Start Address
-
 
 // FF47 BG Palette (BGP) (Read/Write)
 // Contents - BG & Window Palette Data
@@ -125,19 +119,16 @@
 // 0 <= WY <= 143
 // WY must be greater than or equal to 0 and must be less than or equal to 143 for window to be visible.
 
-
 // FF4B Window X Position (WX) (Read/Write)
 // Window X Position
 // 0 <= WX <= 166
 //W X must be greater than or equal to 0 and must be less than or equal to 166 for window to be visible.
 
-
-
 #ifndef GAMEBOY_PPU_H
 #define GAMEBOY_PPU_H
 #include <cstdint>
-#include <memory.h>
-
+#include "memory.h"
+#include "emulator-form.h"
 
 // Get binary digit from a uint16_t
 // position 0 is lowest digit (Bit 0)
@@ -156,7 +147,7 @@ uint16_t ChangeBinaryDigit(uint16_t source, uint8_t position, uint8_t value);
 uint8_t MixTileDigit(uint8_t source_one, uint8_t source_two, uint8_t position);
 
 // whether this position is out of bound
-bool is_out_of_bound (uint8_t x, uint8_t y);
+bool is_out_of_bound(uint8_t x, uint8_t y);
 
 namespace gameboy
 {
@@ -164,7 +155,8 @@ namespace gameboy
 class Ppu
 {
 public:
-
+    Memory main_mem;
+    EmulatorForm main_form;
     // functions declaration begin
 
     // Main loop
@@ -183,8 +175,8 @@ public:
     void VBlank(void);
 
     // in OAM and VRAM, in fact program has nothing to do
-	// in Hblank, program read each line's data and put them into screen buffer
-	// in Vblank, program fresh the screen and update screen buffer
+    // in Hblank, program read each line's data and put them into screen buffer
+    // in Vblank, program fresh the screen and update screen buffer
     // ↑ Maybe?
     // Not my thoughts
 
@@ -217,21 +209,18 @@ public:
 
     const uint16_t LCDC_Address = 0xFF40;
     const uint16_t STAT_Address = 0xFF41;
-    const uint16_t SCY_Address  = 0xFF42;
-    const uint16_t SCX_Address  = 0xFF43;
-    const uint16_t LY_Address   = 0xFF44;
-    const uint16_t LYC_Address  = 0xFF45;
-    const uint16_t DMA_Address  = 0xFF46;
-    const uint16_t BGP_Address  = 0xFF47;
+    const uint16_t SCY_Address = 0xFF42;
+    const uint16_t SCX_Address = 0xFF43;
+    const uint16_t LY_Address = 0xFF44;
+    const uint16_t LYC_Address = 0xFF45;
+    const uint16_t DMA_Address = 0xFF46;
+    const uint16_t BGP_Address = 0xFF47;
     const uint16_t OBP0_Address = 0xFF48;
     const uint16_t OBP1_Address = 0xFF49;
-    const uint16_t WY_Address   = 0xFF4A;
-    const uint16_t WX_Address   = 0xFF4B;
-    const uint16_t IE_Address   = 0xFFFF;
-    const uint16_t IF_Address   = 0xFF0F;
-
-
-
+    const uint16_t WY_Address = 0xFF4A;
+    const uint16_t WX_Address = 0xFF4B;
+    const uint16_t IE_Address = 0xFFFF;
+    const uint16_t IF_Address = 0xFF0F;
 
     // const variables declaration end
 
@@ -244,33 +233,29 @@ public:
 
     // Register (refresh every time using RefreshVideoRegisters(void))
 
-    uint8_t LCDC=0;// 8 DIGITS
-    uint8_t STAT=0;// 8 DIGITS
-    uint8_t SCY=0;
-    uint8_t SCX=0;
-    uint8_t LY=0;
-    uint8_t LYC=0;
-    uint8_t DMA=0;
-    uint8_t IE=0;
-    uint8_t IF=0;
+    uint8_t LCDC = 0; // 8 DIGITS
+    uint8_t STAT = 0; // 8 DIGITS
+    uint8_t SCY = 0;
+    uint8_t SCX = 0;
+    uint8_t LY = 0;
+    uint8_t LYC = 0;
+    uint8_t DMA = 0;
+    uint8_t IE = 0;
+    uint8_t IF = 0;
 
     // BG Buffer (256*256)
-    uint8_t background_buffer[256][256] = 0;
+    uint8_t background_buffer[256][256];
 
     // non-const variables declaration end
 
     //Class declaration begin
 
     // Ppu Clock
-    class PpuClock
-    {
-        // Add AddClocks time to inner clocks
-        void AddTime(int AddClocks);
+    // Add AddClocks time to inner clocks
+    void AddTime(int AddClocks);
 
-        // reset interrupt registers (IF)
-        void ResetInterruptRegisters(void);
-
-    };
+    // reset interrupt registers (IF)
+    void ResetInterruptRegisters(void);
 
     // Sprite Info in OAM Entry
     struct Sprite
@@ -314,15 +299,13 @@ public:
         bool attributes_x_flip = 0;
         uint8_t attributes_palette_number = 0;
 
-    }OAM_entry[40];
+    } OAM_entry[40];
 
     // OAM Entry
 
 private:
-
     // inner clock
-    uint16_t gpu_inner_clock=0;
-
+    uint16_t gpu_inner_clock = 0;
 };
 } // namespace gameboy
 
