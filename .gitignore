@@ -49,3 +49,11 @@ src/register.h
 .vscode/launch.json
 .vscode/tasks.json
 *.o
+.vscode/ipch/3a7f0e6a4e6ef7c4/mmap_address.bin
+.vscode/ipch/59106e196d6efaad/emulator-form.ipch
+.vscode/ipch/59106e196d6efaad/mmap_address.bin
+.vscode/ipch/6afa82d03e1aa1d6/mmap_address.bin
+.vscode/ipch/fe8fcc05ee2a1b0c/emulator-form-test.ipch
+.vscode/ipch/fe8fcc05ee2a1b0c/mmap_address.bin
+a.out
+a.out

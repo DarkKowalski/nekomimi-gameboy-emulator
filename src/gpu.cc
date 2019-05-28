@@ -74,7 +74,7 @@ void Ppu::PpuLoop(uint8_t clocks)
             if (Ppu::LY >= 144)
             {
                 Ppu::SetMode(Ppu::mode_VBLANK);
-                main_form.RefreshSurface();
+                main_form.refresh_surface();
             }
 
             //if not, go on to next line
@@ -231,7 +231,7 @@ void Ppu::SetMode(uint8_t mode)
 
 void Ppu::DrawLine(uint8_t line_number_y)
 {
-    uint8_t i;
+    uint8`_t i;
     uint8_t j;
     //int16_t k; // for k--
 

@@ -156,7 +156,7 @@ class Ppu
 {
 public:
     Memory main_mem;
-    EmulatorForm main_form;
+    Emulatorform main_form;
     // functions declaration begin
 
     // Main loop

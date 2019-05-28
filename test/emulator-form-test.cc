@@ -6,10 +6,10 @@
 using namespace gameboy;
 
 Memory test_mem;
-EmulatorForm test_form;
+Emulatorform test_form;
 
 int main(void)
 {
-    test_form.CreateWindow(160,144,"Test Emulator!");
+    test_form.create_window(SCREEN_WIDTH,SCREEN_HEIGHT,"Test Emulator!",227,264,239);
     return 0;
 }
