@@ -24,7 +24,7 @@ void Emulatorform::set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color)
     SDL_UnlockSurface(Emulatorform::emulator_window_surface);
     auto format = Emulatorform::emulator_window_surface->format;
     uint32_t *screen_pixel_buffer = (Uint32 *)Emulatorform::emulator_window_surface->pixels;
-    screen_pixel_buffer[pos_y * 160 + pos_x] = SDL_MapRGB(format, Emulatorform::color_palatte[color][0], Emulatorform::color_palatte[color][1],Emulatorform::color_palatte[color][2]);
+    screen_pixel_buffer[pos_y * SCREEN_WIDTH + pos_x] = SDL_MapRGB(format, Emulatorform::color_palatte[color][0], Emulatorform::color_palatte[color][1],Emulatorform::color_palatte[color][2]);
 }
 
 void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue)

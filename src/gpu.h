@@ -132,11 +132,11 @@
 
 // Get binary digit from a uint16_t
 // position 0 is lowest digit (Bit 0)
-uint8_t GetBinaryDigit(uint16_t source, uint8_t position);
+uint8_t get_binary_digit(uint16_t source, uint8_t position);
 
 // change binary bits from a uint16_t
 // change position in source to value
-uint16_t ChangeBinaryDigit(uint16_t source, uint8_t position, uint8_t value);
+uint16_t change_binary_digit(uint16_t source, uint8_t position, uint8_t value);
 
 // mix tile colors
 // eg: first line in first liine is 00000010 (02) ,
@@ -144,7 +144,7 @@ uint16_t ChangeBinaryDigit(uint16_t source, uint8_t position, uint8_t value);
 // we will get 01 01 01 01 01 01 11 01,
 // which is 11111131
 // this function returns 0, 1, 2, 3 for each query
-uint8_t MixTileDigit(uint8_t source_one, uint8_t source_two, uint8_t position);
+uint8_t mix_tile_digit(uint8_t source_one, uint8_t source_two, uint8_t position);
 
 // whether this position is out of bound
 bool is_out_of_bound(uint8_t x, uint8_t y);
@@ -159,20 +159,20 @@ public:
     Emulatorform main_form;
     // functions declaration begin
 
-    // Main loop
-    void PpuLoop(uint8_t clocks);
+    // Main
+    void ppu_main(uint8_t clocks);
 
     // 4 modes
     // for each line in first 144 lines
     // 20 clocks for OAMSearch
-    void OAMSearch(void);
-    // 43 clocks for PixelTransfer
-    void PixelTransfer(void);
-    // 51 clocks for HBlank
-    void HBlank(void);
+    void oam_search(void);
+    // 43 clocks for PixelTransfer (DMA)
+    void pixel_transfer(void);
+    // 51 clock0s for HBlank
+    void h_blank(void);
     // for last 10 lines * (20+43+51) clocks per line
     // there's VBlank
-    void VBlank(void);
+    void v_blank(void);
 
     // in OAM and VRAM, in fact program has nothing to do
     // in Hblank, program read each line's data and put them into screen buffer
@@ -181,16 +181,16 @@ public:
     // Not my thoughts
 
     // set mode
-    void SetMode(uint8_t mode);
+    void set_mode(uint8_t mode);
 
     // draw line y
-    void DrawLine(uint8_t line_number_y);
+    void draw_line(uint8_t line_number_y);
 
     // update lyc
-    void UpdateLYC(void);
+    void update_LYC(void);
 
     // refresh registers
-    void RefreshVideoRegisters(void);
+    void refresh_video_registers(void);
 
     // functions declaration end
 
@@ -252,10 +252,10 @@ public:
 
     // Ppu Clock
     // Add AddClocks time to inner clocks
-    void AddTime(int AddClocks);
+    void add_time(int AddClocks);
 
     // reset interrupt registers (IF)
-    void ResetInterruptRegisters(void);
+    void reset_interrupt_registers(void);
 
     // Sprite Info in OAM Entry
     struct Sprite
