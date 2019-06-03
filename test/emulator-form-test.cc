@@ -1,15 +1,47 @@
 #include "../src/gpu.h"
-//#include "../src/register.h"
+#include "../src/joypad.h"
 #include "../src/memory.h"
-//#include "../src/cpu.h"
+#include "../src/cartridge.h"
+#include "../src/emulator-form.h"
 #include <iostream>
 using namespace gameboy;
 
-Memory test_mem;
-Emulatorform test_form;
+// build command
+// g++ ./src/emulator-form.cc  ./src/timer.h ./src/timer.cc ./src/cartridge.h ./src/cartridge.cc ./src/miscellaneous.h ./src/miscellaneous.cc ./src/joypad.h ./src/joypad.cc ./src/emulator-form.h ./src/gpu.cc ./src/gpu.h ./src/memory.cc ./src/memory.h ./test/emulator-form-test.cc -o form_test.out -lSDL2 -lSDL2main -Wall
 
-int main(void)
+Memory mem;
+Emulatorform form;
+Ppu ppu;
+Joypad the_joypad;
+Cartridge cartridge;
+
+int main(int argc, char *argv[])
 {
-    test_form.create_window(SCREEN_WIDTH,SCREEN_HEIGHT,"Test Emulator!",227,264,239);
+    std::string test_file;
+
+    if (argc > 1) //get file by command
+    {
+        test_file = std::string(argv[1]);
+    }
+    else
+    {
+        std::cout << "Please input ROM name" << std::endl;
+        std::cin >> test_file;
+    }
+
+    // create a window with Cierra's hair's color
+    form.create_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Test Cierra", 227, 234, 239);
+
+    // test cartridge load
+    cartridge.load_rom(test_file);
+
+    // test Cartridge Type
+    cartridge.check_cartidge_headers();
+
+    // sleep 2000
+    SDL_Delay(2000); /*  */
+
+    // quit
+    form.destroy_window();
     return 0;
 }

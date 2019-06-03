@@ -1,39 +1,19 @@
 #include "gpu.h"
 #include "memory.h"
+#include "emulator-form.h"
+#include "miscellaneous.h"
+
 using namespace gameboy;
 
-uint8_t get_binary_digit(uint16_t source, uint8_t position)
-{
-    return (source >> position) & 1;
-}
-
-uint16_t change_binary_digit(uint16_t source, uint8_t position, uint8_t value)
-{
-    return ((source) ^ (-value ^ source) & (1 << position));
-}
-
-bool is_out_of_bound(uint8_t x, uint8_t y)
-{
-    return x < 0 && x >= SCREEN_WIDTH && y < 0 && y >= SCREEN_HEIGHT;
-}
-
-uint8_t mix_tile_digit(uint8_t source_one, uint8_t source_two, uint8_t position)
-{
-    uint8_t mix_result;
-    uint8_t bit_1;
-    uint8_t bit_2;
-    bit_1 = get_binary_digit(source_one, position);
-    bit_2 = get_binary_digit(source_two, position);
-    mix_result = 2 * bit_1 + bit_2;
-    return mix_result;
-}
+extern Memory mem;
+extern Emulatorform form;
 
 void Ppu::ppu_main(uint8_t clocks)
 {
     Ppu::reset_interrupt_registers();
     Ppu::refresh_video_registers();
 
-    // sync with system clocks
+    // sync with system cycles
     Ppu::add_time(clocks);
 
     // 1 clock == 4 dots
@@ -74,7 +54,7 @@ void Ppu::ppu_main(uint8_t clocks)
             if (Ppu::LY >= SCREEN_HEIGHT)
             {
                 Ppu::set_mode(Ppu::mode_VBLANK);
-                main_form.refresh_surface();
+                form.refresh_surface();
             }
 
             //if not, go on to next line
@@ -100,7 +80,7 @@ void Ppu::ppu_main(uint8_t clocks)
 
             // reset ly
             Ppu::LY = 0;
-            main_mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
+            mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
         }
     }
 
@@ -120,16 +100,16 @@ void Ppu::oam_search(void)
     for (i = 0; i < 40; i++)
     {
         // Y position
-        Ppu::OAM_entry[i].y_position = main_mem.get_memory_byte(0xFE00 + i * 4);
+        Ppu::OAM_entry[i].y_position = mem.get_memory_byte(0xFE00 + i * 4);
 
         // X position
-        Ppu::OAM_entry[i].x_position = main_mem.get_memory_byte(0xFE00 + i * 4 + 1);
+        Ppu::OAM_entry[i].x_position = mem.get_memory_byte(0xFE00 + i * 4 + 1);
 
         // tile_number
-        Ppu::OAM_entry[i].tile_number = main_mem.get_memory_byte(0xFE00 + i * 4 + 2);
+        Ppu::OAM_entry[i].tile_number = mem.get_memory_byte(0xFE00 + i * 4 + 2);
 
         // get attritube
-        temp_attritube = main_mem.get_memory_byte(0xFE00 + i * 4 + 3);
+        temp_attritube = mem.get_memory_byte(0xFE00 + i * 4 + 3);
 
         // write 4 attributes
         Ppu::OAM_entry[i].attributes_priority = get_binary_digit(temp_attritube, 7);
@@ -154,13 +134,13 @@ void Ppu::h_blank(void)
 
     // write LY value into memory
     Ppu::LY++;
-    main_mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
+    mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
 }
 
 void Ppu::v_blank(void)
 {
     Ppu::LY = (Ppu::gpu_inner_clock / 456 + SCREEN_HEIGHT);
-    main_mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
+    mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
 }
 
 void Ppu::set_mode(uint8_t mode)
@@ -225,8 +205,8 @@ void Ppu::set_mode(uint8_t mode)
     }
 
     // write back to memory
-    main_mem.set_memory_byte(Ppu::IF_Address, Ppu::IF);
-    main_mem.set_memory_byte(Ppu::STAT_Address, Ppu::STAT);
+    mem.set_memory_byte(IF_Address, Ppu::IF);
+    mem.set_memory_byte(Ppu::STAT_Address, Ppu::STAT);
 }
 
 void Ppu::draw_line(uint8_t line_number_y)
@@ -235,7 +215,7 @@ void Ppu::draw_line(uint8_t line_number_y)
     uint8_t j;
     //int16_t k; // for k--
 
-    // result of draw_line, which will be sent to main_form.screen_buffer
+    // result of draw_line, which will be sent to form.screen_buffer
     //uint8_t line_buffer[SCREEN_WIDTH] = 0;
 
     // which position is currently under rendering
@@ -359,7 +339,7 @@ void Ppu::draw_line(uint8_t line_number_y)
             current_tile_map_address = background_tile_map_address_start + i;
 
             // read entry
-            tile_seq = main_mem.get_memory_byte(current_tile_map_address);
+            tile_seq = mem.get_memory_byte(current_tile_map_address);
 
             // calcuates which tile address should we read from according to the tile_seq
             current_tile_address = background_tile_map_address_start + tile_seq * 0x10;
@@ -370,11 +350,11 @@ void Ppu::draw_line(uint8_t line_number_y)
             for (current_line_in_tile = 0; current_line_in_tile < 7; current_line_in_tile++)
             {
                 // read line data
-                tile_line_data_one = main_mem.get_memory_byte(current_tile_address + current_line_in_tile * 2);
-                tile_line_data_two = main_mem.get_memory_byte(current_tile_address + current_line_in_tile * 2 + 1);
+                tile_line_data_one = mem.get_memory_byte(current_tile_address + current_line_in_tile * 2);
+                tile_line_data_two = mem.get_memory_byte(current_tile_address + current_line_in_tile * 2 + 1);
 
                 // mix
-                for (i = 0; i < 8; i++)
+                for (i = 0; i < PIXELS_PER_TILELINE; i++)
                 {
                     tile_line_data[i] = mix_tile_digit(tile_line_data_one, tile_line_data_two, i);
                 }
@@ -390,7 +370,7 @@ void Ppu::draw_line(uint8_t line_number_y)
                 // digits:7 6 5 4 3 2 1 0
                 // data:  1 1 1 1 1 1 3 1
                 // pixels:0 1 2 3 4 5 6 7
-                for (i = 0; i < 8; i++)
+                for (i = 0; i < PIXELS_PER_TILELINE; i++)
                 {
                     background_buffer[background_pixel_y_start_position][background_pixel_x_start_position + i] = tile_line_data[7 - i];
                 }
@@ -468,8 +448,8 @@ void Ppu::draw_line(uint8_t line_number_y)
             for (current_line_in_sprite = 0; current_line_in_sprite < 7; current_line_in_sprite++)
             {
                 // read line data
-                sprite_line_data_one = main_mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2);
-                sprite_line_data_two = main_mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2 + 1);
+                sprite_line_data_one = mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2);
+                sprite_line_data_two = mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2 + 1);
 
                 // mix
                 for (i = 0; i < 8; i++)
@@ -551,10 +531,10 @@ void Ppu::draw_line(uint8_t line_number_y)
             }
         }
     }
-    // send the line into main_form.screen_buffer
+    // send the line into form.screen_buffer
     for (i = 0; i < SCREEN_WIDTH; i++)
     {
-        main_form.screen_buffer[line_number_y][i] = background_buffer_screen[line_number_y][i];
+        form.screen_buffer[line_number_y][i] = background_buffer_screen[line_number_y][i];
     }
 }
 
@@ -568,15 +548,15 @@ void Ppu::update_LYC(void)
 
 void Ppu::refresh_video_registers(void)
 {
-    Ppu::LCDC = main_mem.get_memory_byte(Ppu::LCDC_Address);
-    Ppu::STAT = main_mem.get_memory_byte(Ppu::STAT_Address);
-    Ppu::SCY = main_mem.get_memory_byte(Ppu::SCY_Address);
-    Ppu::SCX = main_mem.get_memory_byte(Ppu::SCX_Address);
-    Ppu::LY = main_mem.get_memory_byte(Ppu::LY_Address);
-    Ppu::LYC = main_mem.get_memory_byte(Ppu::LYC_Address);
-    Ppu::DMA = main_mem.get_memory_byte(Ppu::DMA_Address);
-    Ppu::IE = main_mem.get_memory_byte(Ppu::IE_Address);
-    Ppu::IF = main_mem.get_memory_byte(Ppu::IF_Address);
+    Ppu::LCDC = mem.get_memory_byte(Ppu::LCDC_Address);
+    Ppu::STAT = mem.get_memory_byte(Ppu::STAT_Address);
+    Ppu::SCY = mem.get_memory_byte(Ppu::SCY_Address);
+    Ppu::SCX = mem.get_memory_byte(Ppu::SCX_Address);
+    Ppu::LY = mem.get_memory_byte(Ppu::LY_Address);
+    Ppu::LYC = mem.get_memory_byte(Ppu::LYC_Address);
+    Ppu::DMA = mem.get_memory_byte(Ppu::DMA_Address);
+    Ppu::IE = mem.get_memory_byte(IE_Address);
+    Ppu::IF = mem.get_memory_byte(IF_Address);
 }
 
 void Ppu::add_time(int AddClocks)
@@ -587,8 +567,8 @@ void Ppu::add_time(int AddClocks)
 
 void Ppu::reset_interrupt_registers(void)
 {
-    // get current flags
-    uint8_t all_interrupts = main_mem.get_memory_byte(Ppu::IF_Address);
+    // get current interrupt status
+    uint8_t all_interrupts = mem.get_memory_byte(IF_Address);
 
     // change bit 0 to 0 (V-Blank)
     change_binary_digit(all_interrupts, 0, 0);
@@ -597,5 +577,5 @@ void Ppu::reset_interrupt_registers(void)
     change_binary_digit(all_interrupts, 1, 0);
 
     // write result to memory
-    main_mem.set_memory_byte(Ppu::IF_Address, Ppu::IF);
+    mem.set_memory_byte(IF_Address, Ppu::IF);
 }

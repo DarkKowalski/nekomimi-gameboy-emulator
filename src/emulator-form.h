@@ -2,15 +2,13 @@
 
 #ifndef GAMEBOY_EMULATOR_FORM_H
 #define GAMEBOY_EMULATOR_FORM_H
-#include <SDL2/SDL.h>
+
 #include <cstdint>
 #include <string>
+#include <SDL2/SDL.h>
 
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 144
-
-#define PHYSICAL_DEVICE_RES_WIDTH 1920
-#define PHYSICAL_DEVICE_RES_HEIGHT 1080
 
 namespace gameboy
 {
@@ -24,11 +22,16 @@ public:
 
     // 4 colors on screen
     uint8_t color_palatte[4][3] = {
-                                {0, 0, 0},          //Darkest (00)
-                                {104, 86, 83},      //01
-                                {222, 182, 175},    //10
-                                {255, 255, 255}     //Brightest (11)
-                             };
+        {0, 0, 0},       //Darkest (00)
+        {104, 86, 83},   //01
+        {222, 182, 175}, //10
+        {255, 255, 255}  //Brightest (11)
+    };
+
+    // handle Joypad input in gpu loop
+    // if return value is false, which indicates that user input is ESC, and the emulator quit.
+    // if it's ture, just continue.
+    bool get_joypad_input(void);
 
     //set on-screen pixel to exactly which shade
     void set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color);
@@ -39,11 +42,14 @@ public:
     //create window, window width, window height, window title
     void create_window(uint8_t on_screen_window_width, uint8_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue);
 
+    //  destroy window and quit
+    void destroy_window(void);
+
 private:
     SDL_Window *emulator_window;
     SDL_Surface *emulator_window_surface;
-    SDL_Event e;
-
+    SDL_Event joypad_event;
+    SDL_DisplayMode physical_device_display_mode;
 };
 } // namespace gameboy
 
