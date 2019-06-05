@@ -33,14 +33,13 @@ int main(int argc, char *argv[])
     form.create_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Test Cierra", 227, 234, 239);
 
     // test cartridge load
-    cartridge.load_rom(test_file);
+    cartridge.load_rom_to_buffer(test_file);
 
     // test Cartridge Type
     cartridge.check_cartidge_headers();
 
     // sleep 2000
-    SDL_Delay(2000); /*  */
-
+    SDL_Delay(2000);
     // quit
     form.destroy_window();
     return 0;

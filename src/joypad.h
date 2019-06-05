@@ -16,9 +16,6 @@ class Joypad
 {
 public:
     // handle inputs
-    // according to CPU manual and other materials:
-    // Joypad doesnt need to write the 0xFF00 register through memory interface.
-    // i cant change Memory, so i need to add something here
 
     // which column had the ROM selected
     uint8_t key_column = 0x00;
