@@ -4,12 +4,12 @@
 
 using namespace gameboy;
 
-extern Memory mem;
+extern Memory this_mem;
 
 void Joypad::joypad_interrupts(void)
 {
     // get current IF status
-    uint8_t current_interrupt = mem.get_memory_byte(IF_Address);
+    uint8_t current_interrupt = this_mem.get_memory_byte(IF_Address);
 
     // if ... we request a joypad interrupt
     if ((Joypad::key_column == 0x10 && Joypad::keys_controls != 0x0f) ||
@@ -19,7 +19,7 @@ void Joypad::joypad_interrupts(void)
         change_binary_digit(current_interrupt, 4, true);
 
         // write back to memory
-        mem.set_memory_byte(IF_Address, current_interrupt);
+        this_mem.set_memory_byte(IF_Address, current_interrupt);
     }
 }
 
@@ -33,7 +33,7 @@ void Joypad::write_result(void)
     {
         Joypad::temp_ff00 = Joypad::key_column + Joypad::keys_directions;
     }
-    mem.set_memory_byte(JOYPAD_ADDRESS, temp_ff00);
+    this_mem.set_memory_byte(JOYPAD_ADDRESS, temp_ff00);
 }
 
 void Joypad::reset_joypad(void)

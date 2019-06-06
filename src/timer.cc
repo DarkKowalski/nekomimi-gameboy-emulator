@@ -4,7 +4,7 @@
 
 using namespace gameboy;
 
-extern Memory mem;
+extern Memory this_mem;
 
 uint16_t Timer::increase(uint8_t timing)
 {
@@ -66,9 +66,9 @@ bool Timer::step()
     {
         Timer::_reg_tima =Timer:: _reg_tma;
 
-        uint8_t add = mem.get_memory_byte(0xFF0F);
+        uint8_t add = this_mem.get_memory_byte(0xFF0F);
         change_binary_digit(add, 2, true);
-        mem.set_memory_byte(0xFF0F, add);
+        this_mem.set_memory_byte(0xFF0F, add);
         return true;
     }
     return false;

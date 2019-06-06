@@ -18,6 +18,6 @@ int main(void)
     test_mem.set_memory_byte(256,0x11);
     test_mem.set_memory_byte(257,0x45);
     test_mem.set_memory_byte(258,0x14);
-    test_cpu.reg.set_register_byte(RegisterName::r_pc,256);
+    test_cpu.reg.set_register_word(RegisterName::r_pc,256);
     printf("%d\n",test_cpu.read_opcode_byte(test_mem));
 }

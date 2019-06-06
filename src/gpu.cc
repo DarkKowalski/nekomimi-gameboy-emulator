@@ -5,7 +5,7 @@
 
 using namespace gameboy;
 
-extern Memory mem;
+extern Memory this_mem;
 extern Emulatorform form;
 
 void Ppu::ppu_main(uint8_t clocks)
@@ -80,7 +80,7 @@ void Ppu::ppu_main(uint8_t clocks)
 
             // reset ly
             Ppu::LY = 0;
-            mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
+            this_mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
         }
     }
 
@@ -100,16 +100,16 @@ void Ppu::oam_search(void)
     for (i = 0; i < 40; i++)
     {
         // Y position
-        Ppu::OAM_entry[i].y_position = mem.get_memory_byte(0xFE00 + i * 4);
+        Ppu::OAM_entry[i].y_position = this_mem.get_memory_byte(0xFE00 + i * 4);
 
         // X position
-        Ppu::OAM_entry[i].x_position = mem.get_memory_byte(0xFE00 + i * 4 + 1);
+        Ppu::OAM_entry[i].x_position = this_mem.get_memory_byte(0xFE00 + i * 4 + 1);
 
         // tile_number
-        Ppu::OAM_entry[i].tile_number = mem.get_memory_byte(0xFE00 + i * 4 + 2);
+        Ppu::OAM_entry[i].tile_number = this_mem.get_memory_byte(0xFE00 + i * 4 + 2);
 
         // get attritube
-        temp_attritube = mem.get_memory_byte(0xFE00 + i * 4 + 3);
+        temp_attritube = this_mem.get_memory_byte(0xFE00 + i * 4 + 3);
 
         // write 4 attributes
         Ppu::OAM_entry[i].attributes_priority = get_binary_digit(temp_attritube, 7);
@@ -134,13 +134,13 @@ void Ppu::h_blank(void)
 
     // write LY value into memory
     Ppu::LY++;
-    mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
+    this_mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
 }
 
 void Ppu::v_blank(void)
 {
     Ppu::LY = (Ppu::gpu_inner_clock / 456 + SCREEN_HEIGHT);
-    mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
+    this_mem.set_memory_byte(Ppu::LY_Address, Ppu::LY);
 }
 
 void Ppu::set_mode(uint8_t mode)
@@ -205,8 +205,8 @@ void Ppu::set_mode(uint8_t mode)
     }
 
     // write back to memory
-    mem.set_memory_byte(IF_Address, Ppu::IF);
-    mem.set_memory_byte(Ppu::STAT_Address, Ppu::STAT);
+    this_mem.set_memory_byte(IF_Address, Ppu::IF);
+    this_mem.set_memory_byte(Ppu::STAT_Address, Ppu::STAT);
 }
 
 void Ppu::draw_line(uint8_t line_number_y)
@@ -339,7 +339,7 @@ void Ppu::draw_line(uint8_t line_number_y)
             current_tile_map_address = background_tile_map_address_start + i;
 
             // read entry
-            tile_seq = mem.get_memory_byte(current_tile_map_address);
+            tile_seq = this_mem.get_memory_byte(current_tile_map_address);
 
             // calcuates which tile address should we read from according to the tile_seq
             current_tile_address = background_tile_map_address_start + tile_seq * 0x10;
@@ -350,8 +350,8 @@ void Ppu::draw_line(uint8_t line_number_y)
             for (current_line_in_tile = 0; current_line_in_tile < 7; current_line_in_tile++)
             {
                 // read line data
-                tile_line_data_one = mem.get_memory_byte(current_tile_address + current_line_in_tile * 2);
-                tile_line_data_two = mem.get_memory_byte(current_tile_address + current_line_in_tile * 2 + 1);
+                tile_line_data_one = this_mem.get_memory_byte(current_tile_address + current_line_in_tile * 2);
+                tile_line_data_two = this_mem.get_memory_byte(current_tile_address + current_line_in_tile * 2 + 1);
 
                 // mix
                 for (i = 0; i < PIXELS_PER_TILELINE; i++)
@@ -448,8 +448,8 @@ void Ppu::draw_line(uint8_t line_number_y)
             for (current_line_in_sprite = 0; current_line_in_sprite < 7; current_line_in_sprite++)
             {
                 // read line data
-                sprite_line_data_one = mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2);
-                sprite_line_data_two = mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2 + 1);
+                sprite_line_data_one = this_mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2);
+                sprite_line_data_two = this_mem.get_memory_byte(current_sprite_tile_address + current_line_in_sprite * 2 + 1);
 
                 // mix
                 for (i = 0; i < 8; i++)
@@ -549,15 +549,15 @@ void Ppu::update_LYC(void)
 
 void Ppu::refresh_video_registers(void)
 {
-    Ppu::LCDC = mem.get_memory_byte(Ppu::LCDC_Address);
-    Ppu::STAT = mem.get_memory_byte(Ppu::STAT_Address);
-    Ppu::SCY = mem.get_memory_byte(Ppu::SCY_Address);
-    Ppu::SCX = mem.get_memory_byte(Ppu::SCX_Address);
-    Ppu::LY = mem.get_memory_byte(Ppu::LY_Address);
-    Ppu::LYC = mem.get_memory_byte(Ppu::LYC_Address);
-    Ppu::DMA = mem.get_memory_byte(Ppu::DMA_Address);
-    Ppu::IE = mem.get_memory_byte(IE_Address);
-    Ppu::IF = mem.get_memory_byte(IF_Address);
+    Ppu::LCDC = this_mem.get_memory_byte(Ppu::LCDC_Address);
+    Ppu::STAT = this_mem.get_memory_byte(Ppu::STAT_Address);
+    Ppu::SCY = this_mem.get_memory_byte(Ppu::SCY_Address);
+    Ppu::SCX = this_mem.get_memory_byte(Ppu::SCX_Address);
+    Ppu::LY = this_mem.get_memory_byte(Ppu::LY_Address);
+    Ppu::LYC = this_mem.get_memory_byte(Ppu::LYC_Address);
+    Ppu::DMA = this_mem.get_memory_byte(Ppu::DMA_Address);
+    Ppu::IE = this_mem.get_memory_byte(IE_Address);
+    Ppu::IF = this_mem.get_memory_byte(IF_Address);
 }
 
 void Ppu::add_time(int AddClocks)
@@ -569,7 +569,7 @@ void Ppu::add_time(int AddClocks)
 void Ppu::reset_interrupt_registers(void)
 {
     // get current interrupt status
-    uint8_t all_interrupts = mem.get_memory_byte(IF_Address);
+    uint8_t all_interrupts = this_mem.get_memory_byte(IF_Address);
 
     // change bit 0 to 0 (V-Blank)
     change_binary_digit(all_interrupts, 0, 0);
@@ -578,32 +578,32 @@ void Ppu::reset_interrupt_registers(void)
     change_binary_digit(all_interrupts, 1, 0);
 
     // write result to memory
-    mem.set_memory_byte(IF_Address, Ppu::IF);
+    this_mem.set_memory_byte(IF_Address, Ppu::IF);
 }
 
 // get Object Palette 1
 void Ppu::get_OBP_1(void)
 {
-    Ppu::OBP_1[0]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),1)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),0);
-    Ppu::OBP_1[1]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),3)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),2);
-    Ppu::OBP_1[2]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),5)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),4);
-    Ppu::OBP_1[3]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),7)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),6);
+    Ppu::OBP_1[0]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),1)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),0);
+    Ppu::OBP_1[1]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),3)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),2);
+    Ppu::OBP_1[2]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),5)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),4);
+    Ppu::OBP_1[3]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),7)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP0_Address),6);
 }
 
 // get Object Palette 2
 void Ppu::get_OBP_2(void)
 {
-    Ppu::OBP_2[0]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),1)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),0);
-    Ppu::OBP_2[1]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),3)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),2);
-    Ppu::OBP_2[2]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),5)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),4);
-    Ppu::OBP_2[3]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),7)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),6);
+    Ppu::OBP_2[0]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),1)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),0);
+    Ppu::OBP_2[1]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),3)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),2);
+    Ppu::OBP_2[2]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),5)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),4);
+    Ppu::OBP_2[3]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),7)+get_binary_digit(this_mem.get_memory_byte(Ppu::OBP1_Address),6);
 }
 
 // get background Palette
  void Ppu::get_BGP(void)
  {
-     Ppu::BGP[0]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),1)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),0);
-     Ppu::BGP[1]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),3)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),2);
-     Ppu::BGP[2]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),5)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),4);
-     Ppu::BGP[3]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),7)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),6);
+     Ppu::BGP[0]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),1)+get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),0);
+     Ppu::BGP[1]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),3)+get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),2);
+     Ppu::BGP[2]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),5)+get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),4);
+     Ppu::BGP[3]=2*get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),7)+get_binary_digit(this_mem.get_memory_byte(Ppu::BGP_Address),6);
  }

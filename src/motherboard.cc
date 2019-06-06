@@ -17,7 +17,7 @@ using namespace gameboy;
 
 Cpu cpu;
 Register reg;
-Memory mem;
+Memory this_mem;
 Emulatorform form;
 Ppu ppu;
 Joypad the_joypad;
@@ -29,27 +29,27 @@ using namespace gameboy;
 
 int main(int argc, char *argv[])
 {
-    std::string test_file;
+    std::string rom_file;
     uint16_t address;
 
     cpu.power_on();
     
     if (argc > 1) //get file by command
     {
-        test_file = std::string(argv[1]);
+        rom_file = std::string(argv[1]);
     }
     else
     {
         std::cout << "Please input ROM name" << std::endl;
-        std::cin >> test_file;
+        std::cin >> rom_file;
     }
 
     // init RAM to 0x00
     // Please note that GameBoy internal RAM on power up contains random data.
     // All of the GameBoy emulators tend to set all RAM to value $00 on entry.
-    for (address = 0x0000; address <= 0xFFFF; address++)
+    for (address = 0x0000; address < 0xFFFF; address++)
     {
-        mem.set_memory_byte(address, 0x00);
+        this_mem.set_memory_byte(address, 0x00);
     }
 
     // init registers and RAM
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     cartridge.init_registers_and_memory();
 
     // cartridge load
-    cartridge.load_rom_to_buffer(test_file);
+    cartridge.load_rom_to_buffer(rom_file);
 
     // check Cartridge Type
     cartridge.check_cartridge_headers();
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     {
         if (form.get_joypad_input()) //get KEYS
         {
-            uint8_t timing = cpu.next(mem); //get TIMING
+            uint8_t timing = cpu.next(this_mem); //get TIMING
             ppu.ppu_main(timing);           //fresh WINDOW
             timer.increase(timing);         //fresh TIMER
         }
