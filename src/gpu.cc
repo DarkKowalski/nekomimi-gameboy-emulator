@@ -473,6 +473,7 @@ void Ppu::draw_line(uint8_t line_number_y)
                     sprite_data[current_line_in_sprite][i] = sprite_tile_line_data[i];
                 }
             }
+            
             // flip y: vertically
             if (Ppu::OAM_entry[sprite_id].attributes_y_flip)
             {
@@ -495,7 +496,7 @@ void Ppu::draw_line(uint8_t line_number_y)
 
             // render this sprite to scrolled screen buffer
 
-            // where should i start?
+            // where should i start drawing this sprite?
             uint8_t sprite_pixel_position_x = 0;
             uint8_t sprite_pixel_position_y = 0;
 
@@ -510,7 +511,7 @@ void Ppu::draw_line(uint8_t line_number_y)
                         continue;
                     }
 
-                    // transparent
+                    // transparency for sprite
                     if (sprite_data[i][j] == 0)
                         continue;
 
@@ -579,3 +580,30 @@ void Ppu::reset_interrupt_registers(void)
     // write result to memory
     mem.set_memory_byte(IF_Address, Ppu::IF);
 }
+
+// get Object Palette 1
+void Ppu::get_OBP_1(void)
+{
+    Ppu::OBP_1[0]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),1)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),0);
+    Ppu::OBP_1[1]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),3)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),2);
+    Ppu::OBP_1[2]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),5)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),4);
+    Ppu::OBP_1[3]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),7)+get_binary_digit(mem.get_memory_byte(Ppu::OBP0_Address),6);
+}
+
+// get Object Palette 2
+void Ppu::get_OBP_2(void)
+{
+    Ppu::OBP_2[0]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),1)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),0);
+    Ppu::OBP_2[1]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),3)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),2);
+    Ppu::OBP_2[2]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),5)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),4);
+    Ppu::OBP_2[3]=2*get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),7)+get_binary_digit(mem.get_memory_byte(Ppu::OBP1_Address),6);
+}
+
+// get background Palette
+ void Ppu::get_BGP(void)
+ {
+     Ppu::BGP[0]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),1)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),0);
+     Ppu::BGP[1]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),3)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),2);
+     Ppu::BGP[2]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),5)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),4);
+     Ppu::BGP[3]=2*get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),7)+get_binary_digit(mem.get_memory_byte(Ppu::BGP_Address),6);
+ }

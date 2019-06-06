@@ -7,7 +7,9 @@
 using namespace gameboy;
 
 // build command
-// g++ ./src/emulator-form.cc  ./src/timer.h ./src/timer.cc ./src/cartridge.h ./src/cartridge.cc ./src/miscellaneous.h ./src/miscellaneous.cc ./src/joypad.h ./src/joypad.cc ./src/emulator-form.h ./src/gpu.cc ./src/gpu.h ./src/memory.cc ./src/memory.h ./test/emulator-form-test.cc -o form_test.out -lSDL2 -lSDL2main -Wall
+// g++ -std=c++11 ./src/emulator-form.cc  ./src/timer.h ./src/timer.cc ./src/cartridge.h ./src/cartridge.cc ./src/miscellaneous.h ./src/miscellaneous.cc ./src/joypad.h ./src/joypad.cc ./src/emulator-form.h ./src/gpu.cc ./src/gpu.h ./src/memory.cc ./src/memory.h ./test/emulator-form-test.cc -o form_test.out -lSDL2 -lSDL2main -Wall
+
+// "c:\Program Files (x86)\CodeBlocks\MinGW\bin\mingw32-g++.exe" -std=c++11 ./src/emulator-form.cc  ./src/timer.h ./src/timer.cc ./src/cartridge.h ./src/cartridge.cc ./src/miscellaneous.h ./src/miscellaneous.cc ./src/joypad.h ./src/joypad.cc ./src/emulator-form.h ./src/gpu.cc ./src/gpu.h ./src/memory.cc ./src/memory.h ./test/emulator-form-test.cc -o form_test.exe -lSDL2 -lSDL2main -Wall
 
 Memory mem;
 Emulatorform form;

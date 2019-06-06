@@ -96,7 +96,6 @@
 // Bit 5-4 - Data for Dot Data 10
 // Bit 3-2 - Data for Dot Data 01
 // Bit 1-0 - Data for Dot Data 00 (Normally lightest color)
-// THIS GPU *DONT* support custom palette!
 
 // FF48 Object (Sprites) Palette 0 (OBP0) (Read/Write)
 // This selects the colors for sprite palette 0. It works exactly as BGP ($FF47) except each each value of 0 is transparent.
@@ -104,7 +103,6 @@
 // Bit 5-4 - Data for Dot Data 10
 // Bit 3-2 - Data for Dot Data 01
 // Bit 1-0 - Data for Dot Data 00 (Normally TRANSPARENT)
-// THIS GPU *DONT* support custom palette!
 
 // FF49 Object (Sprites) Palette 1 (OBP1) (Read/Write)
 // This selects the colors for sprite palette 1. It works exactly as BGP ($FF47) except each each value of 0 is transparent.
@@ -112,7 +110,6 @@
 // Bit 5-4 - Data for Dot Data 10
 // Bit 3-2 - Data for Dot Data 01
 // Bit 1-0 - Data for Dot Data 00 (Normally TRANSPARENT)
-// THIS GPU *DONT* support custom palette!
 
 // FF4A Window Y Position (WY) (Read/Write)
 // Window Y Position
@@ -173,12 +170,20 @@ public:
     // refresh registers
     void refresh_video_registers(void);
 
+    // get Object Palette 1
+    void get_OBP_1(void);
+
+    // get Object Palette 2
+    void get_OBP_2(void);
+
+    // get background Palette
+    void get_BGP(void);
+
     // functions declaration end
 
     // const variables declaration start
 
-    // 4 flag modes
-
+    // 4 modes' flags
     const uint8_t mode_OAM_Search = 0x02;
     const uint8_t mode_DMA_Pixel_Transfer = 0x03;
     const uint8_t mode_HBLANK = 0x00;
@@ -224,6 +229,11 @@ public:
 
     // BG Buffer (256*256)
     uint8_t background_buffer[256][256];
+
+    // OBP1, OBP2, BGP
+    uint8_t OBP_1[4];
+    uint8_t OBP_2[4];
+    uint8_t BGP[4];
 
     // non-const variables declaration end
 

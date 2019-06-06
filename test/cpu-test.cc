@@ -15,6 +15,8 @@ using std::cout;
 using std::endl;
 using std::hex;
 
+Memory mem;
+
 //Global
 Cpu test_cpu;
 uint8_t tempOB = 0x00;
@@ -47,7 +49,7 @@ int main(void)
          << endl;
 
     alu_func_test();
-
+     /*
     cout << "*******************************************" << endl;
     cout << "*******************************************" << endl;
     cout << "*******************************************" << endl;
@@ -57,6 +59,7 @@ int main(void)
          << endl;
 
     eight_bit_execution_test();
+    */
 }
 
 void initialize(void)
@@ -76,7 +79,7 @@ void initialize(void)
          << endl;
     for (uint16_t i = 0x0000; i <= 0x00ff; i++)
     {
-        test_cpu.mem.set_memory_byte(i, 0x04);
+        mem.set_memory_byte(i, 0x04);
     }
 }
 
@@ -127,7 +130,7 @@ void alu_func_test(void)
     register_flag_test_debug_print();
 
     cout << "\nExecuting function alu_add_sp" << endl;
-    test_cpu.alu_add_sp(test_cpu.mem);
+    test_cpu.alu_add_sp(mem);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function alu_swap" << endl;
@@ -195,70 +198,72 @@ void alu_func_test(void)
     cout << "The result of alu_res is " << hex << static_cast<unsigned>(tempOB) << endl;
 
     cout << "\nExecuting function alu_jr" << endl;
-    test_cpu.alu_jr(test_cpu.mem);
+    test_cpu.alu_jr(mem);
     register_flag_test_debug_print();
 
     cout << "\nALU tests finish." << endl;
 }
 
+/*
 void eight_bit_execution_test(void)
 {
     cout << "Executing function ex_inc_byte" << endl;
-    test_cpu.ex_inc_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_inc_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_dec_byte" << endl;
-    test_cpu.ex_dec_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_dec_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_add_byte" << endl;
-    test_cpu.ex_add_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_add_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_adc_byte" << endl;
-    test_cpu.ex_adc_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_adc_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_sub_byte" << endl;
-    test_cpu.ex_sub_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_sub_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_sbc_byte" << endl;
-    test_cpu.ex_sbc_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_sbc_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_and_byte" << endl;
-    test_cpu.ex_and_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_and_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_daa_byte" << endl;
-    test_cpu.ex_daa_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_daa_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_scf_byte" << endl;
-    test_cpu.ex_scf_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_scf_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_xor_byte" << endl;
-    test_cpu.ex_xor_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_xor_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_or_byte" << endl;
-    test_cpu.ex_or_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_or_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_or_byte" << endl;
-    test_cpu.ex_or_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_or_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_cpl_byte" << endl;
-    test_cpu.ex_cpl_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_cpl_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 
     cout << "\nExecuting function ex_ccf_byte" << endl;
-    test_cpu.ex_ccf_byte(test_cpu.mem, EXE_TEST_ARG);
+    test_cpu.ex_ccf_byte(mem, EXE_TEST_ARG);
     register_flag_test_debug_print();
 }
+*/
 
 void miscellaneous_test(void)
 {

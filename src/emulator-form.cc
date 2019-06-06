@@ -185,6 +185,8 @@ void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_scre
     physical_device_res_width = physical_device_display_mode.w;
     physical_device_res_height = physical_device_display_mode.h;
 
+    printf("Physical device resolution is %d*%d\n",physical_device_res_width,physical_device_res_height);
+
     // now create window
     Emulatorform::emulator_window = SDL_CreateWindow(on_screen_title.c_str(), physical_device_res_width / 2 - SCREEN_WIDTH / 2, physical_device_res_height / 2 - SCREEN_HEIGHT / 2, on_screen_window_width, on_screen_window_height, SDL_WINDOW_SHOWN);
 
