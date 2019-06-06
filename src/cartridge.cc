@@ -6,7 +6,7 @@
 
 using namespace gameboy;
 
-extern Memory mem;
+extern Memory this_mem;
 //extern Register reg;
 
 bool Cartridge::load_rom_to_buffer(std::string file_name)
@@ -74,7 +74,7 @@ void Cartridge::load_rom_to_ram(void)
     uint16_t address;
     for (address = 0x0000; address < 0x8000; address++)
     {
-        mem.set_memory_byte(address, rom_bytes[address]);
+        this_mem.set_memory_byte(address, rom_bytes[address]);
     }
 }
 
@@ -89,7 +89,7 @@ void Cartridge::switch_banks(uint8_t bank_number)
 
     for (address = 0x4000; address < 0x8000; address++)
     {
-        mem.set_memory_byte(address, rom_bytes[address + BANK_SIZE * (temp_number - 1)]);
+        this_mem.set_memory_byte(address, rom_bytes[address + BANK_SIZE * (temp_number - 1)]);
     }
 }
 
@@ -103,7 +103,7 @@ void Cartridge::check_whether_to_switch_bank(void)
     uint8_t switch_target_temp = 0x00;
     for (address = 0x2000; address < 0x4000; address++)
     {
-        if (mem.get_memory_byte(address) == rom_bytes[address])
+        if (this_mem.get_memory_byte(address) == rom_bytes[address])
         {
             // if mot modified by someone
             continue;
@@ -111,10 +111,10 @@ void Cartridge::check_whether_to_switch_bank(void)
         else
         {
             // if modified
-            switch_target_temp = mem.get_memory_byte(address);
+            switch_target_temp = this_mem.get_memory_byte(address);
 
             // write back original value
-            mem.set_memory_byte(address, rom_bytes[address]);
+            this_mem.set_memory_byte(address, rom_bytes[address]);
 
             // read out the last five digits and put it into target
             for (digit = 0; digit < 5; digit++)
@@ -155,35 +155,35 @@ void Cartridge::init_registers_and_memory(void)
     //reg.set_register_word(RegisterName::r_sp, 0xFFFE);
 
     // init memory
-    mem.set_memory_byte(0xFF05, 0x00);
-    mem.set_memory_byte(0xFF06, 0x00);
-    mem.set_memory_byte(0xFF07, 0x00);
-    mem.set_memory_byte(0xFF10, 0x80);
-    mem.set_memory_byte(0xFF11, 0xBF);
-    mem.set_memory_byte(0xFF12, 0xF3);
-    mem.set_memory_byte(0xFF14, 0xBF);
-    mem.set_memory_byte(0xFF16, 0x3F);
-    mem.set_memory_byte(0xFF17, 0x00);
-    mem.set_memory_byte(0xFF19, 0xBF);
-    mem.set_memory_byte(0xFF1A, 0x7F);
-    mem.set_memory_byte(0xFF1B, 0xFF);
-    mem.set_memory_byte(0xFF1C, 0x9F);
-    mem.set_memory_byte(0xFF1E, 0xBF);
-    mem.set_memory_byte(0xFF20, 0xFF);
-    mem.set_memory_byte(0xFF21, 0x00);
-    mem.set_memory_byte(0xFF22, 0x00);
-    mem.set_memory_byte(0xFF23, 0xBF);
-    mem.set_memory_byte(0xFF24, 0x77);
-    mem.set_memory_byte(0xFF25, 0xF3);
-    mem.set_memory_byte(0xFF26, 0xF1);
-    mem.set_memory_byte(0xFF40, 0x91);
-    mem.set_memory_byte(0xFF42, 0x00);
-    mem.set_memory_byte(0xFF43, 0x00);
-    mem.set_memory_byte(0xFF45, 0x00);
-    mem.set_memory_byte(0xFF47, 0xFC);
-    mem.set_memory_byte(0xFF48, 0xFF);
-    mem.set_memory_byte(0xFF49, 0xFF);
-    mem.set_memory_byte(0xFF4A, 0x00);
-    mem.set_memory_byte(0xFF4B, 0x00);
-    mem.set_memory_byte(0xFFFF, 0x00);
+    this_mem.set_memory_byte(0xFF05, 0x00);
+    this_mem.set_memory_byte(0xFF06, 0x00);
+    this_mem.set_memory_byte(0xFF07, 0x00);
+    this_mem.set_memory_byte(0xFF10, 0x80);
+    this_mem.set_memory_byte(0xFF11, 0xBF);
+    this_mem.set_memory_byte(0xFF12, 0xF3);
+    this_mem.set_memory_byte(0xFF14, 0xBF);
+    this_mem.set_memory_byte(0xFF16, 0x3F);
+    this_mem.set_memory_byte(0xFF17, 0x00);
+    this_mem.set_memory_byte(0xFF19, 0xBF);
+    this_mem.set_memory_byte(0xFF1A, 0x7F);
+    this_mem.set_memory_byte(0xFF1B, 0xFF);
+    this_mem.set_memory_byte(0xFF1C, 0x9F);
+    this_mem.set_memory_byte(0xFF1E, 0xBF);
+    this_mem.set_memory_byte(0xFF20, 0xFF);
+    this_mem.set_memory_byte(0xFF21, 0x00);
+    this_mem.set_memory_byte(0xFF22, 0x00);
+    this_mem.set_memory_byte(0xFF23, 0xBF);
+    this_mem.set_memory_byte(0xFF24, 0x77);
+    this_mem.set_memory_byte(0xFF25, 0xF3);
+    this_mem.set_memory_byte(0xFF26, 0xF1);
+    this_mem.set_memory_byte(0xFF40, 0x91);
+    this_mem.set_memory_byte(0xFF42, 0x00);
+    this_mem.set_memory_byte(0xFF43, 0x00);
+    this_mem.set_memory_byte(0xFF45, 0x00);
+    this_mem.set_memory_byte(0xFF47, 0xFC);
+    this_mem.set_memory_byte(0xFF48, 0xFF);
+    this_mem.set_memory_byte(0xFF49, 0xFF);
+    this_mem.set_memory_byte(0xFF4A, 0x00);
+    this_mem.set_memory_byte(0xFF4B, 0x00);
+    this_mem.set_memory_byte(0xFFFF, 0x00);
 }
