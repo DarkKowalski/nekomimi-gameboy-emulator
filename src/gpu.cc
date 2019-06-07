@@ -321,7 +321,7 @@ void Ppu::draw_line(uint8_t line_number_y)
         // read and render tile ranging 0~255
 
         // where in tile map am i reding
-        uint8_t tile_map_seq = 0;
+        uint16_t tile_map_seq = 0;
 
         // get tile # from map
         uint8_t tile_seq = 0;

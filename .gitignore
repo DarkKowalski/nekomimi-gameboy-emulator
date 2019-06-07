@@ -120,3 +120,11 @@ form_test.out
 .vscode/ipch/ac1a2000bb9727ad/mmap_address.bin
 .vscode/ipch/d4c37d9e8f0a7bec/miscellaneous.ipch
 .vscode/ipch/d4c37d9e8f0a7bec/mmap_address.bin
+test/bros.gb
+test/debug.out
+test/form_test.exe
+test/SDL2.dll
+test/tank.gb
+test/test_cpu.out
+test/tetris.gb
+.vscode/ipch/415f1193a2bd5546/mmap_address.bin

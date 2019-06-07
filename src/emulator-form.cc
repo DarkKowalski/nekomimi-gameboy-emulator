@@ -17,7 +17,7 @@ bool Emulatorform::get_joypad_input(void)
     // T-Select
     // Enter-Start
 
-    while (SDL_PollEvent(&joypad_event))
+    while (SDL_PollEvent(&(Emulatorform::joypad_event)))
     {
 
         if (joypad_event.type == SDL_QUIT)

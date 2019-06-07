@@ -83,6 +83,12 @@ int main(int argc, char *argv[])
             uint8_t timing = cpu.next(this_mem); //get TIMING
             ppu.ppu_main(timing);           //fresh WINDOW
             timer.increase(timing);         //fresh TIMER
+
+            // if using MBC1 we check whether we should switch bank and switch if necessary
+            if (cartridge.using_MBC1)
+            {
+                cartridge.check_whether_to_switch_bank();
+            }
         }
         else
             break; //quit

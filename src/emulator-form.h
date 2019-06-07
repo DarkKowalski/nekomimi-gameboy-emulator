@@ -45,7 +45,6 @@ public:
     //  destroy window and quit
     void destroy_window(void);
 
-private:
     SDL_Window *emulator_window;
     SDL_Surface *emulator_window_surface;
     SDL_Event joypad_event;

@@ -38,7 +38,14 @@ int main(int argc, char *argv[])
     cartridge.load_rom_to_buffer(test_file);
 
     // test Cartridge Type
-    cartridge.check_cartidge_headers();
+    cartridge.check_cartridge_headers();
+
+    // test form func
+    form.set_pixel_color(130,140,0);
+    form.set_pixel_color(129,139,3);
+    form.set_pixel_color(129,140,0);
+    form.set_pixel_color(130,139,3);
+    SDL_UpdateWindowSurface(form.emulator_window);
 
     // sleep 2000
     SDL_Delay(2000);
