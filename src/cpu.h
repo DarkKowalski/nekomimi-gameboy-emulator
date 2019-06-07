@@ -624,7 +624,6 @@ class Cpu
 {
   public:
     Register reg;
-    Memory mem; // Need to be removed after mmuint finishs
     bool f_halted;
     bool f_enable_interrupts;
 
@@ -638,7 +637,7 @@ class Cpu
     {
         // Function Table
         // Main
-        handle_opcode_main[0x00] = nullptr;
+        handle_opcode_main[0x00] = &Cpu::ex_nop;
         handle_opcode_main[0x01] = &Cpu::ex_ld_imm_to_pair;
         handle_opcode_main[0x02] = &Cpu::ex_ld_byte_to_pair_mem;
         handle_opcode_main[0x03] = &Cpu::ex_inc_pair;
@@ -1468,6 +1467,8 @@ class Cpu
 
     // Decode and execute opcode
     // Opcode Main
+    // NOP
+    void ex_nop(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RLCA
     void ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RLA

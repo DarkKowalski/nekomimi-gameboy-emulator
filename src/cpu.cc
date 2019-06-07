@@ -768,6 +768,12 @@ void Cpu::alu_jr(Memory &mem)
 // Decode and execute opcode
 // Opcode Main
 
+// NOP
+void Cpu::ex_nop(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    return;
+}
+
 // RLCA
 void Cpu::ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
