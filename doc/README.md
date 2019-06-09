@@ -17,9 +17,15 @@
 | :------------ |:----------------------- | :-------                        |
 | gameboy       | r_                      | register: A F B C D E H L SP PC |
 |               | f_                      | flag(F): Z N H C                |
+|               | ior_                    | I/O register                    |
+|               | arg_                    | Argument                        |
+|               | temp_                   | temporary variable/flag         |
 |               | alu_                    | Arithmetic Logic Unit operation |
+|               | ex_                     | Decode and execute opcode       |
 |               | _byte                   | 8-bit version                   |
 |               | _word                   | 16-bit version                  |
+|               | _dword                  | 32-bit version                  |
+|               | _zp                     | Zero Page                       |
 
 ## Endianness
 Little endian
