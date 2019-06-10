@@ -128,3 +128,11 @@ test/tank.gb
 test/test_cpu.out
 test/tetris.gb
 .vscode/ipch/415f1193a2bd5546/mmap_address.bin
+.vscode/ipch/91d6756da11d05e3/main.ipch
+.vscode/ipch/91d6756da11d05e3/mmap_address.bin
+box.gb
+*.gb
+*.gbram
+*.gbram1
+*.aa
+t.txt
