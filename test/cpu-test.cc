@@ -27,10 +27,12 @@ uint16_t tempHB = 0x0000;
 #define EXE_TEST_ARG 0x14
 
 void initialize(void);
+void clear_reg(void);
 void alu_func_test(void);
 void eight_bit_execution_test(void);
 void miscellaneous_test(void);
 void register_flag_test_debug_print(void);
+void test(void);
 
 int main(void)
 {
@@ -39,7 +41,7 @@ int main(void)
 
     cout << "Initial register contents are as following:" << endl;
     register_flag_test_debug_print();
-
+    /*
     cout << "\nNow run ALU tests." << endl;
     cout << "For single-parameter function, the parameter is ALU_TEST_PARA_ONE (0x"
          << hex << ALU_TEST_PARA_ONE << ")" << endl;
@@ -49,6 +51,7 @@ int main(void)
          << endl;
 
     alu_func_test();
+    */
      /*
     cout << "*******************************************" << endl;
     cout << "*******************************************" << endl;
@@ -60,6 +63,98 @@ int main(void)
 
     eight_bit_execution_test();
     */
+    test();
+}
+
+void clear_reg(void)
+{
+    test_cpu.power_on();
+    test_cpu.reg.power_on();
+
+    test_cpu.reg.set_flag(FlagName::f_z, false);
+    test_cpu.reg.set_flag(FlagName::f_n, false);
+    test_cpu.reg.set_flag(FlagName::f_h, false);
+    test_cpu.reg.set_flag(FlagName::f_c, false);
+
+}
+
+void test(void)
+{
+    clear_reg();
+    test_cpu.ex_ldd_byte_to_hl_mem(mem,0x32,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ldd_hl_mem_to_byte(mem,0x3a,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ldh_byte_to_n_zp(mem,0xe0,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ldh_n_zp_to_byte(mem,0xf0,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ldi_byte_to_hl_mem(mem,0x22,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ldi_hl_mem_to_byte(mem,0x2a,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_byte(mem,0x40,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_byte_to_c_zp(mem,0xe2,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_byte_to_hl_mem(mem,0x70,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_byte_to_n_mem(mem,0xea,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_byte_to_pair_mem(mem,0x02,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_c_zp_to_byte(mem,0xf2,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_hl_mem_to_byte(mem,0x46,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_hl_to_sp(mem,0xf9,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_imm_to_byte(mem,0x06,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_imm_to_hl_mem(mem,0x36,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_imm_to_pair(mem,0x01,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_imm_to_sp(mem,0x31,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_n_mem_to_byte(mem,0xfa,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_pair_mem_to_byte(mem,0x0a,tempOB);
+    register_flag_test_debug_print();
+
+    clear_reg();
+    test_cpu.ex_ld_sp_r8_to_hl(mem,0xf8,tempOB);
+    register_flag_test_debug_print();
+    clear_reg();
+    test_cpu.ex_ld_sp_to_mem(mem,0x08,tempOB);
+    register_flag_test_debug_print();
 }
 
 void initialize(void)

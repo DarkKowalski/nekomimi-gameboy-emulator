@@ -11,7 +11,7 @@ using namespace gameboy;
 
 // "c:\Program Files (x86)\CodeBlocks\MinGW\bin\mingw32-g++.exe" -std=c++11 ./src/emulator-form.cc  ./src/timer.h ./src/timer.cc ./src/cartridge.h ./src/cartridge.cc ./src/miscellaneous.h ./src/miscellaneous.cc ./src/joypad.h ./src/joypad.cc ./src/emulator-form.h ./src/gpu.cc ./src/gpu.h ./src/memory.cc ./src/memory.h ./test/emulator-form-test.cc -o form_test.exe -lSDL2 -lSDL2main -Wall
 
-Memory mem;
+Memory this_mem;
 Emulatorform form;
 Ppu ppu;
 Joypad the_joypad;
@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
     // test Cartridge Type
     cartridge.check_cartridge_headers();
 
-    // test form func
     form.set_pixel_color(130,140,0);
     form.set_pixel_color(129,139,3);
     form.set_pixel_color(129,140,0);
@@ -48,7 +47,7 @@ int main(int argc, char *argv[])
     SDL_UpdateWindowSurface(form.emulator_window);
 
     // sleep 2000
-    SDL_Delay(2000);
+    SDL_Delay(12000);
     // quit
     form.destroy_window();
     return 0;
