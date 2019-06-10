@@ -1,12 +1,8 @@
 #include "timer.h"
-#include "miscellaneous.h"
-#include "memory.h"
 
 using namespace gameboy;
 
-extern Memory this_mem;
-
-uint16_t Timer::increase(uint8_t timing)
+uint16_t Timer::increase(uint8_t timing, Memory &mem)
 {
     Timer::_clock_sub += timing;
 
@@ -15,26 +11,26 @@ uint16_t Timer::increase(uint8_t timing)
         Timer::_clock_main++;
         Timer::_clock_sub -= 4;
 
-       Timer:: _clock_div++;
+        Timer::_clock_div++;
         if (Timer::_clock_div == 16)
         {
             Timer::_reg_div = (Timer::_reg_div + 1) & 255;
             Timer::_clock_div = 0;
         }
     }
-    if (check())
+    if (check(mem))
     {
-        return rb(0xFF06);
-        //Call CPU interrupt!!!
+        return Timer::rb(0xFF06);
+        //Call CPU interrupt
     }
-    return false;
+    return 0;
 }
 
-bool Timer::check()
+bool Timer::check(Memory &mem)
 {
-    if (Timer::_reg_tac % 4)
+    if (mem.get_memory_byte(0xFF07) % 4)
     {
-        switch (Timer::_reg_tac % 3)
+        switch (mem.get_memory_byte(0xFF07) % 3)
         {
         case 0:
             Timer::threshold = 64;
@@ -51,24 +47,24 @@ bool Timer::check()
         }
 
         if (Timer::_clock_main >= Timer::threshold)
-            if (step())
+            if (Timer::step(mem))
                 return true;
     }
     return false;
 }
 
-bool Timer::step()
+bool Timer::step(Memory &mem)
 {
     Timer::_clock_main = 0;
     Timer::_reg_tima++;
 
     if (Timer::_reg_tima > 255)
     {
-        Timer::_reg_tima =Timer:: _reg_tma;
+        Timer::_reg_tima = Timer::_reg_tma;
 
-        uint8_t add = this_mem.get_memory_byte(0xFF0F);
-        change_binary_digit(add, 2, true);
-        this_mem.set_memory_byte(0xFF0F, add);
+        uint8_t add = mem.get_memory_byte(0xFF0F);
+        add = change_binary_digit(add, 2, true);
+        mem.set_memory_byte(0xFF0F, add);
         return true;
     }
     return false;
