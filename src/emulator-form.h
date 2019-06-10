@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <string>
 #include <SDL2/SDL.h>
+#include "joypad.h"
 
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 144
@@ -21,17 +22,24 @@ public:
     uint8_t screen_buffer[144][160];
 
     // 4 colors on screen
-    uint8_t color_palatte[4][3] = {
-        {0, 0, 0},       //Darkest (00)
-        {104, 86, 83},   //01
-        {222, 182, 175}, //10
-        {255, 255, 255}  //Brightest (11)
+    uint8_t color_palatte[4][3] =
+        {
+            {0, 0, 0},       //Darkest (00)
+            {104, 86, 83},   //01
+            {222, 182, 175}, //10
+            {255, 255, 255}  //Brightest (11)
+            /*
+        {255, 255, 255},       //Darkest (00)
+        {222, 182, 175},   //01
+        {104, 86, 83}, //10
+        {0, 0, 0}  //Brightest (11)
+        */
     };
 
     // handle Joypad input in gpu loop
     // if return value is false, which indicates that user input is ESC, and the emulator quit.
     // if it's ture, just continue.
-    bool get_joypad_input(void);
+    bool get_joypad_input(Joypad &the_joypad, Memory &mem);
 
     //set on-screen pixel to exactly which shade
     void set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color);

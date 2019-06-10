@@ -1,11 +1,8 @@
 #include "emulator-form.h"
-#include "joypad.h"
 
 using namespace gameboy;
 
-extern Joypad the_joypad;
-
-bool Emulatorform::get_joypad_input(void)
+bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
 {
 
     // W-Up
@@ -36,54 +33,70 @@ bool Emulatorform::get_joypad_input(void)
             // for column 1 (Directions)
             // hit RIGHT
             case SDLK_d:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
+                printf("You pressed D (RIGHT)\n");
                 the_joypad.keys_directions &= 0xE;
                 break;
 
             // hit LEFT
             case SDLK_a:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
+                printf("You pressed A (LEFT)\n");
                 the_joypad.keys_directions &= 0xD;
                 break;
 
             // hit UP
             case SDLK_w:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
+                printf("You pressed W (UP)\n");
                 the_joypad.keys_directions &= 0xB;
                 break;
 
             // hit DOWN
             case SDLK_s:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
+                printf("You pressed S (DOWN)\n");
                 the_joypad.keys_directions &= 0x7;
                 break;
 
             // for column 0 (Controls)
             // hit A
             case SDLK_j:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
+                printf("You pressed J (A)\n");
                 the_joypad.keys_controls &= 0xE;
                 break;
 
             // hit B
             case SDLK_k:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
+                printf("You pressed K (B)\n");
                 the_joypad.keys_controls &= 0xD;
                 break;
 
             // hit SELECT
             case SDLK_t:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
+                printf("You pressed T (SELECT)\n");
                 the_joypad.keys_controls &= 0xB;
                 break;
 
             // hit START
             case SDLK_RETURN:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
+                printf("You pressed RETURN (START)\n");
                 the_joypad.keys_controls &= 0x7;
                 break;
             }
-            the_joypad.joypad_interrupts();
+            the_joypad.joypad_interrupts(mem);
         }
 
         // when you release keys
@@ -94,24 +107,28 @@ bool Emulatorform::get_joypad_input(void)
             // for column 1 (Directions)
             // release RIGHT
             case SDLK_d:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
                 the_joypad.keys_directions |= 0x1;
                 break;
 
             // release LEFT
             case SDLK_a:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
                 the_joypad.keys_directions |= 0x2;
                 break;
 
             // release UP
             case SDLK_w:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
                 the_joypad.keys_directions |= 0x4;
                 break;
 
             // release DOWN
             case SDLK_s:
+                the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
                 the_joypad.keys_directions |= 0x8;
                 break;
@@ -119,49 +136,41 @@ bool Emulatorform::get_joypad_input(void)
             // for column 0 (Controls)
             // release A
             case SDLK_j:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
                 the_joypad.keys_controls |= 0x1;
                 break;
 
             // release B
             case SDLK_k:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
                 the_joypad.keys_controls |= 0x2;
                 break;
 
             // release SELECT
             case SDLK_t:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
                 the_joypad.keys_controls |= 0x4;
                 break;
 
             /// release START
             case SDLK_RETURN:
+                the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
                 the_joypad.keys_controls |= 0x8;
                 break;
             }
         }
     }
-    the_joypad.write_result();
+    the_joypad.write_result(mem);
     the_joypad.reset_joypad();
     return true;
 }
 
 void Emulatorform::refresh_surface(void)
 {
-    // from screen_buffer to screen_pixel_buffer
-
-    uint8_t i;
-    uint8_t j;
-    for (i = 0; i < SCREEN_HEIGHT; i++)
-    {
-        for (j = 0; j < SCREEN_WIDTH; j++)
-        {
-            Emulatorform::set_pixel_color(i, j, Emulatorform::screen_buffer[i][j]);
-        }
-    }
-
     SDL_UpdateWindowSurface(Emulatorform::emulator_window);
 }
 
@@ -169,8 +178,8 @@ void Emulatorform::set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color)
 {
     SDL_UnlockSurface(Emulatorform::emulator_window_surface);
     auto format = Emulatorform::emulator_window_surface->format;
-    uint32_t *screen_pixel_buffer = (Uint32 *)Emulatorform::emulator_window_surface->pixels;
-    screen_pixel_buffer[pos_y * SCREEN_WIDTH + pos_x] = SDL_MapRGB(format, Emulatorform::color_palatte[color][0], Emulatorform::color_palatte[color][1], Emulatorform::color_palatte[color][2]);
+    uint32_t *pixels = (Uint32 *)Emulatorform::emulator_window_surface->pixels;
+    pixels[pos_y * SCREEN_WIDTH + pos_x] = SDL_MapRGB(format, Emulatorform::color_palatte[color][0], Emulatorform::color_palatte[color][1], Emulatorform::color_palatte[color][2]);
 }
 
 void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue)
@@ -185,7 +194,7 @@ void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_scre
     physical_device_res_width = physical_device_display_mode.w;
     physical_device_res_height = physical_device_display_mode.h;
 
-    printf("Physical device resolution is %d*%d\n",physical_device_res_width,physical_device_res_height);
+    printf("Physical device resolution is %d*%d\n", physical_device_res_width, physical_device_res_height);
 
     // now create window
     Emulatorform::emulator_window = SDL_CreateWindow(on_screen_title.c_str(), physical_device_res_width / 2 - SCREEN_WIDTH / 2, physical_device_res_height / 2 - SCREEN_HEIGHT / 2, on_screen_window_width, on_screen_window_height, SDL_WINDOW_SHOWN);
