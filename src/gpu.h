@@ -126,6 +126,9 @@
 
 //#include "marshmallow.h"
 #include <cstdint>
+#include "memory.h"
+#include "emulator-form.h"
+#include "miscellaneous.h"
 
 #define PIXELS_PER_TILELINE 8
 
@@ -138,19 +141,19 @@ public:
     // functions declaration begin
 
     // Main
-    void ppu_main(uint8_t clocks);
+    void ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form);
 
     // 4 modes
     // for each line in first 144 lines
     // 20 clocks for OAMSearch
-    void oam_search(void);
+    void oam_search(Memory &mem);
     // 43 clocks for PixelTransfer (DMA)
     void pixel_transfer(void);
     // 51 clock0s for HBlank
-    void h_blank(void);
+    void h_blank(Memory &mem, Emulatorform &form);
     // for last 10 lines * (20+43+51) clocks per line
     // there's VBlank
-    void v_blank(void);
+    void v_blank(Memory &mem);
 
     // in OAM and VRAM, in fact program has nothing to do
     // in Hblank, program read each line's data and put them into screen buffer
@@ -159,25 +162,25 @@ public:
     // Not my thoughts
 
     // set mode
-    void set_mode(uint8_t mode);
+    void set_mode(uint8_t mode, Memory &mem);
 
     // draw line y
-    void draw_line(uint8_t line_number_y);
+    void draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form);
 
     // update lyc
-    void update_LYC(void);
+    void update_LYC(Memory &mem);
 
     // refresh registers
-    void refresh_video_registers(void);
+    void refresh_video_registers(Memory &mem);
 
     // get Object Palette 1
-    void get_OBP_1(void);
+    void get_OBP_1(Memory &mem);
 
     // get Object Palette 2
-    void get_OBP_2(void);
+    void get_OBP_2(Memory &mem);
 
     // get background Palette
-    void get_BGP(void);
+    void get_BGP(Memory &mem);
 
     // functions declaration end
 
@@ -244,7 +247,7 @@ public:
     void add_time(int AddClocks);
 
     // reset interrupt registers (IF)
-    void reset_interrupt_registers(void);
+    void reset_interrupt_registers(Memory &mem);
 
     // Sprite Info in OAM Entry
     struct Sprite
