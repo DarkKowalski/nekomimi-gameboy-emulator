@@ -3,12 +3,19 @@
 
 #include <cstdint>
 #include <string>
+#include "memory.h"
+#include "register.h"
+#include "miscellaneous.h"
+#include <math.h>
 
 // target is Super Mario Land (64 KB)
 #define ROM_SIZE 65536
 #define CARTRIDGE_TYPE_ADDRESS 0x0147
 #define ROM_SIZE_ADDRESS 0x0148
 #define BANK_SIZE 0x4000
+
+#define MBC1_MAGIC_NUMBER_START_ADDRESS 0x1FFF
+#define MBC1_MAGIC_NUMBER_END_ADDRESS 0x3FFF
 //#define RAM_SIZE_ADDRESS 0x0149
 
 namespace gameboy
@@ -20,10 +27,17 @@ public:
     bool using_ROM_only = false;
     bool using_MBC1 = false;
     bool not_supported_cartridge_mode = true;
+
+    uint8_t mbc1_current_bank = 1;
+
+    uint16_t mbc1_trigger_address = 0;
+
     uint8_t rom_attributes_bank_count = 0;
 
     // target is Super Mario Land (64 KB)
-    uint8_t rom_bytes[65536];
+    // to pass CPU test, i set a large amount
+    // who knows why it will switch to bank 22?
+    uint8_t rom_bytes[393216] = {0};
 
     //
     char rom_name[15];
@@ -41,7 +55,7 @@ public:
 
     // load rom to ram
     // support ROM only and MBC1
-    void load_rom_to_ram(void);
+    void load_rom_to_ram(Memory &mem);
 
     // 0000-3FFF - ROM Bank 00 (Read Only)
     // This area always contains the first 16KBytes of the cartridge ROM.
@@ -64,7 +78,8 @@ public:
 
     // check whether we should switch ROM banks
     // if we should, then switch it
-    void check_whether_to_switch_bank(void);
+    // DEPRECATED
+    //void check_whether_to_switch_bank(Memory &mem);
 
     // Get ROM names
     void get_rom_name(void);
@@ -108,7 +123,18 @@ public:
     // [$FF4A] = $00   ; WY
     // [$FF4B] = $00   ; WX
     // [$FFFF] = $00   ; IE
-    void init_registers_and_memory(void);
+    void init_memory(Memory &mem);
+
+    // cartridge power on modi
+    void power_on(std::string arg_rom_file, Memory &mem);
+
+    // cartridge get and set byte
+    uint8_t get_cartridge_byte(uint16_t address);
+    void set_cartridge_byte(uint16_t address, uint8_t byte);
+
+    // cartridge get and set word
+    uint16_t get_cartridge_word(uint16_t address);
+    void set_cartridge_word(uint16_t address, uint16_t word);
 };
 } // namespace gameboy
 

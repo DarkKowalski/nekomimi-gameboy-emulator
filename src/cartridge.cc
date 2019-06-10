@@ -1,13 +1,6 @@
 #include "cartridge.h"
-#include "memory.h"
-#include "register.h"
-#include "miscellaneous.h"
-#include <math.h>
 
-using namespace gameboy;
-
-extern Memory this_mem;
-//extern Register reg;
+using gameboy::Cartridge;
 
 bool Cartridge::load_rom_to_buffer(std::string file_name)
 {
@@ -34,7 +27,7 @@ bool Cartridge::load_rom_to_buffer(std::string file_name)
 void Cartridge::check_cartridge_headers(void)
 {
     // check memory controller type (0x0147 in ROM is 01h)
-    if (Cartridge::rom_bytes[CARTRIDGE_TYPE_ADDRESS] == 0x01)
+    if (Cartridge::rom_bytes[CARTRIDGE_TYPE_ADDRESS] == 0x01 || Cartridge::rom_bytes[CARTRIDGE_TYPE_ADDRESS] == 0x02 || Cartridge::rom_bytes[CARTRIDGE_TYPE_ADDRESS] == 0x03)
     {
         // set bool
         Cartridge::using_MBC1 = true;
@@ -69,52 +62,55 @@ void Cartridge::check_cartridge_headers(void)
     }
 }
 
-void Cartridge::load_rom_to_ram(void)
+void Cartridge::load_rom_to_ram(Memory &mem)
 {
     uint16_t address;
     for (address = 0x0000; address < 0x8000; address++)
     {
-        this_mem.set_memory_byte(address, rom_bytes[address]);
+        mem.set_memory_byte(address, rom_bytes[address]);
     }
 }
 
 void Cartridge::switch_banks(uint8_t bank_number)
 {
-    uint16_t address;
     uint8_t temp_number = bank_number;
 
     // Values of 0 and 1 do the same thing and point to ROM bank 1.
     if (temp_number == 0)
         temp_number = 1;
 
-    for (address = 0x4000; address < 0x8000; address++)
-    {
-        this_mem.set_memory_byte(address, rom_bytes[address + BANK_SIZE * (temp_number - 1)]);
-    }
+    Cartridge::mbc1_current_bank = temp_number;
 }
 
-void Cartridge::check_whether_to_switch_bank(void)
+// DEPRECATED
+/*
+void Cartridge::check_whether_to_switch_bank(Memory &mem)
 {
-    // search and compare whether someone had changed ROM bank in 0x2000 to 0x3FFF
-    uint16_t address = 0x2000;
+
+    // search and compare whether cpu had changed ROM bank in 0x2000 to 0x3FFF
+    // if true, switch rom bank
+    // i assume the addresses varies as each ROM developer develop it, but in one rom it's the same
     uint8_t digit = 0;
 
     uint8_t switch_target = 0x00;
     uint8_t switch_target_temp = 0x00;
-    for (address = 0x2000; address < 0x4000; address++)
+
+    if (Cartridge::mbc1_trigger_address!=0)
     {
-        if (this_mem.get_memory_byte(address) == rom_bytes[address])
+        if (mem.get_memory_byte(Cartridge::mbc1_trigger_address) == rom_bytes[Cartridge::mbc1_trigger_address])
         {
             // if mot modified by someone
-            continue;
+            return;
         }
         else
         {
+            printf("Pre-confingured MBC 1 trigger address changed.\n");
             // if modified
-            switch_target_temp = this_mem.get_memory_byte(address);
+            switch_target_temp = mem.get_memory_byte(Cartridge::mbc1_trigger_address);
+            //printf("Find address %d changed to %d\n",address,switch_target_temp);
 
             // write back original value
-            this_mem.set_memory_byte(address, rom_bytes[address]);
+            mem.set_memory_byte(Cartridge::mbc1_trigger_address, rom_bytes[Cartridge::mbc1_trigger_address]);
 
             // read out the last five digits and put it into target
             for (digit = 0; digit < 5; digit++)
@@ -123,13 +119,49 @@ void Cartridge::check_whether_to_switch_bank(void)
             }
 
             // switch bank
-            Cartridge::switch_banks(switch_target);
+            printf("Switching bank to %d\n",switch_target);
+            Cartridge::switch_banks(switch_target, mem);
 
             return;
         }
     }
+    else
+    {
+        for (uint16_t address = 0x1FFF; address < 0x4000; address++)
+        {
+            if (mem.get_memory_byte(address) == rom_bytes[address])
+            {
+                // if mot modified by someone
+                continue;
+            }
+            else
+            {
+                // if modified
+                switch_target_temp = mem.get_memory_byte(address);
+                printf("Find address %d changed to %d\n",address,switch_target_temp);
+                Cartridge::mbc1_trigger_address=address;
+
+                // write back original value
+                mem.set_memory_byte(address, rom_bytes[address]);
+
+                // read out the last five digits and put it into target
+                for (digit = 0; digit < 5; digit++)
+                {
+                    switch_target = switch_target + get_binary_digit(switch_target_temp, digit) * (pow(2, digit));
+                }
+
+                // switch bank
+                printf("Switching bank to %d\n",switch_target);
+                Cartridge::switch_banks(switch_target, mem);
+
+                return;
+            }
+        }
+    }
+
     return;
 }
+*/
 
 void Cartridge::get_rom_name(void)
 {
@@ -142,7 +174,7 @@ void Cartridge::get_rom_name(void)
     printf("ROM name: %s\n", Cartridge::rom_name);
 }
 
-void Cartridge::init_registers_and_memory(void)
+void Cartridge::init_memory(Memory &mem)
 {
     // init register
     // found initialization instructions in register.h
@@ -155,35 +187,128 @@ void Cartridge::init_registers_and_memory(void)
     //reg.set_register_word(RegisterName::r_sp, 0xFFFE);
 
     // init memory
-    this_mem.set_memory_byte(0xFF05, 0x00);
-    this_mem.set_memory_byte(0xFF06, 0x00);
-    this_mem.set_memory_byte(0xFF07, 0x00);
-    this_mem.set_memory_byte(0xFF10, 0x80);
-    this_mem.set_memory_byte(0xFF11, 0xBF);
-    this_mem.set_memory_byte(0xFF12, 0xF3);
-    this_mem.set_memory_byte(0xFF14, 0xBF);
-    this_mem.set_memory_byte(0xFF16, 0x3F);
-    this_mem.set_memory_byte(0xFF17, 0x00);
-    this_mem.set_memory_byte(0xFF19, 0xBF);
-    this_mem.set_memory_byte(0xFF1A, 0x7F);
-    this_mem.set_memory_byte(0xFF1B, 0xFF);
-    this_mem.set_memory_byte(0xFF1C, 0x9F);
-    this_mem.set_memory_byte(0xFF1E, 0xBF);
-    this_mem.set_memory_byte(0xFF20, 0xFF);
-    this_mem.set_memory_byte(0xFF21, 0x00);
-    this_mem.set_memory_byte(0xFF22, 0x00);
-    this_mem.set_memory_byte(0xFF23, 0xBF);
-    this_mem.set_memory_byte(0xFF24, 0x77);
-    this_mem.set_memory_byte(0xFF25, 0xF3);
-    this_mem.set_memory_byte(0xFF26, 0xF1);
-    this_mem.set_memory_byte(0xFF40, 0x91);
-    this_mem.set_memory_byte(0xFF42, 0x00);
-    this_mem.set_memory_byte(0xFF43, 0x00);
-    this_mem.set_memory_byte(0xFF45, 0x00);
-    this_mem.set_memory_byte(0xFF47, 0xFC);
-    this_mem.set_memory_byte(0xFF48, 0xFF);
-    this_mem.set_memory_byte(0xFF49, 0xFF);
-    this_mem.set_memory_byte(0xFF4A, 0x00);
-    this_mem.set_memory_byte(0xFF4B, 0x00);
-    this_mem.set_memory_byte(0xFFFF, 0x00);
+    mem.set_memory_byte(0xFF05, 0x00);
+    mem.set_memory_byte(0xFF06, 0x00);
+    mem.set_memory_byte(0xFF07, 0x00);
+    mem.set_memory_byte(0xFF10, 0x80);
+    mem.set_memory_byte(0xFF11, 0xBF);
+    mem.set_memory_byte(0xFF12, 0xF3);
+    mem.set_memory_byte(0xFF14, 0xBF);
+    mem.set_memory_byte(0xFF16, 0x3F);
+    mem.set_memory_byte(0xFF17, 0x00);
+    mem.set_memory_byte(0xFF19, 0xBF);
+    mem.set_memory_byte(0xFF1A, 0x7F);
+    mem.set_memory_byte(0xFF1B, 0xFF);
+    mem.set_memory_byte(0xFF1C, 0x9F);
+    mem.set_memory_byte(0xFF1E, 0xBF);
+    mem.set_memory_byte(0xFF20, 0xFF);
+    mem.set_memory_byte(0xFF21, 0x00);
+    mem.set_memory_byte(0xFF22, 0x00);
+    mem.set_memory_byte(0xFF23, 0xBF);
+    mem.set_memory_byte(0xFF24, 0x77);
+    mem.set_memory_byte(0xFF25, 0xF3);
+    mem.set_memory_byte(0xFF26, 0xF1);
+    mem.set_memory_byte(0xFF40, 0x91);
+    mem.set_memory_byte(0xFF42, 0x00);
+    mem.set_memory_byte(0xFF43, 0x00);
+    mem.set_memory_byte(0xFF45, 0x00);
+    mem.set_memory_byte(0xFF47, 0xFC);
+    mem.set_memory_byte(0xFF48, 0xFF);
+    mem.set_memory_byte(0xFF49, 0xFF);
+    mem.set_memory_byte(0xFF4A, 0x00);
+    mem.set_memory_byte(0xFF4B, 0x00);
+    mem.set_memory_byte(0xFFFF, 0x00);
+}
+
+void Cartridge::power_on(std::string arg_rom_file, Memory &mem)
+{
+    // init RAM
+    Cartridge::init_memory(mem);
+
+    // cartridge load
+    Cartridge::load_rom_to_buffer(arg_rom_file);
+
+    // check Cartridge Type
+    Cartridge::check_cartridge_headers();
+
+    // get rom name
+    Cartridge::get_rom_name();
+
+    // load desired rom data to RAM
+    Cartridge::load_rom_to_ram(mem);
+}
+
+uint8_t Cartridge::get_cartridge_byte(uint16_t address)
+{
+    if (Cartridge::using_MBC1)
+    {
+        if (address < BANK_SIZE)
+        {
+            // MBC ROM BANK 0
+            return Cartridge::rom_bytes[address];
+        }
+        // if not in ROM BANK 0
+        // eg: ROM BANK 2 begins at 0x8000
+        // we read 0x4000
+        // 0x8000=0x4000+(2-1)*0x4000
+        return Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE];
+    }
+    return Cartridge::rom_bytes[address];
+}
+
+void Cartridge::set_cartridge_byte(uint16_t address, uint8_t byte)
+{
+    if (Cartridge::using_MBC1)
+    {
+        if (address >= MBC1_MAGIC_NUMBER_START_ADDRESS && address <= MBC1_MAGIC_NUMBER_END_ADDRESS)
+        {
+            uint8_t switch_target = 0x00;
+            for (uint8_t digit = 0; digit < 5; digit++)
+            {
+                switch_target = switch_target + get_binary_digit(byte, digit) * (pow(2, digit));
+            }
+            printf("Switching bank to %d\n", switch_target);
+            Cartridge::switch_banks(switch_target);
+            return;
+        }
+        printf("ROM is Trying to set address %d with byte %d\n, MBC1", address, byte);
+        return;
+    }
+    printf("ROM is Trying to set address %d with byte %d\n, ROM ONLY", address, byte);
+}
+
+uint16_t Cartridge::get_cartridge_word(uint16_t address)
+{
+    uint16_t byte_low = 0x0000;
+    uint16_t byte_high = 0x0000;
+    return (byte_low | byte_high);
+
+    if (Cartridge::using_MBC1)
+    {
+        if (address < BANK_SIZE)
+        {
+            // MBC ROM BANK 0
+            byte_low = (Cartridge::rom_bytes[address] & 0xffff);
+            byte_high = ((Cartridge::rom_bytes[address + 1] << 8) & 0xffff);
+            return (byte_low | byte_high);
+        }
+        // if not in ROM BANK 0
+        // eg: ROM BANK 2 begins at 0x8000
+        // we read 0x4000
+        // 0x8000=0x4000+(2-1)*0x4000
+        byte_low = (Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE] & 0xffff);
+        byte_high = ((Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE + 1] << 8) & 0xffff);
+        return Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE];
+    }
+
+    byte_low = (Cartridge::rom_bytes[address] & 0xffff);
+    byte_high = ((Cartridge::rom_bytes[address + 1] << 8) & 0xffff);
+
+    return (byte_low | byte_high);
+}
+
+void Cartridge::set_cartridge_word(uint16_t address, uint16_t word)
+{
+    // do nothing except print error
+    printf("ROM is Trying to set address %d with word %d\n", address, word);
 }
