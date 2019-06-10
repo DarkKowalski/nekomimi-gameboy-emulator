@@ -7,6 +7,9 @@
 
 //#include "marshmallow.h"
 #include <cstdint>
+#include <stdio.h>
+#include "memory.h"
+#include "miscellaneous.h"
 
 #define JOYPAD_ADDRESS 0xFF00
 
@@ -34,10 +37,10 @@ public:
     uint8_t temp_ff00 = 0x00;
 
     // handle intrrupts
-    void joypad_interrupts(void);
+    void joypad_interrupts(Memory &mem);
 
     // write FF00 to memory
-    void write_result(void);
+    void write_result(Memory &mem);
 
     // reset Joypad
     void reset_joypad(void);
