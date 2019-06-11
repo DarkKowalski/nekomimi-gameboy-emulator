@@ -642,10 +642,12 @@ uint8_t Cpu::alu_rrc(uint8_t n)
 // C - Contains old bit 0 data.
 uint8_t Cpu::alu_rr(uint8_t n)
 {
-    bool f_carry = (n & 0x01) == 0x01;
-    uint8_t temp_reg_byte = f_carry ? ((n >> 1) | 0x80) : (n >> 1);
+    uint8_t temp_carry_byte = reg.get_flag(FlagName::f_c);
+    uint8_t temp_reg_byte = (n >> 1) | (temp_carry_byte << 7);
 
+    bool f_carry = (n & 0x01) == 0x01;
     reg.set_flag(FlagName::f_c, f_carry);
+
     reg.set_flag(FlagName::f_h, false);
     reg.set_flag(FlagName::f_n, false);
     reg.set_flag(FlagName::f_z, !temp_reg_byte);
@@ -755,14 +757,10 @@ uint8_t Cpu::alu_res(uint8_t a, uint8_t b)
 // n = one byte signed immediate value
 void Cpu::alu_jr(Memory &mem)
 {
-    uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
-    int8_t temp_imm_byte = mem.get_memory_byte(temp_r_pc_word);
-
-    int32_t temp_r_pc_dword = temp_r_pc_word;
-    temp_r_pc_dword += (temp_imm_byte + 1);
-
-    uint16_t temp_reg_word = (temp_r_pc_dword & 0xffff);
-    reg.set_register_word(RegisterName::r_pc, temp_reg_word);
+    int8_t temp_imm_byte = read_opcode_byte(mem);
+    uint32_t temp_r_pc_dword = reg.get_register_word(RegisterName::r_pc);
+    temp_r_pc_dword += temp_imm_byte;
+    reg.set_register_byte(RegisterName::r_pc, temp_r_pc_dword);
 }
 
 // Decode and execute opcode
@@ -805,7 +803,6 @@ void Cpu::ex_rra(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
     temp_r_a_byte = alu_rr(temp_r_a_byte);
     reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
-    reg.set_flag(FlagName::f_z, false);
 }
 
 // 8-bit INC
