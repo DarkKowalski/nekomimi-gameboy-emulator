@@ -780,7 +780,6 @@ void Cpu::ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
     temp_r_a_byte = alu_rlc(temp_r_a_byte);
     reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
-    reg.set_flag(FlagName::f_z, false);
 }
 
 // RLA
@@ -1706,7 +1705,7 @@ void Cpu::ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_
 // LD 16-bit SP to memory
 void Cpu::ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
-    uint16_t temp_address_word = read_opcode_byte(mem);
+    uint16_t temp_address_word = read_opcode_word(mem);
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
 
     mem.set_memory_word(temp_address_word, temp_r_sp_word);
