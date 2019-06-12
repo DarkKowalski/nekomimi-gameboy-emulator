@@ -236,21 +236,19 @@ void Cpu::alu_adc(uint8_t n)
 // C - Set if no borrow
 void Cpu::alu_sub(uint8_t n)
 {
-    uint16_t temp_n_word = n;
-    uint16_t temp_r_a_word = reg.get_register_byte(RegisterName::r_a);
-    uint16_t temp_reg_word = temp_r_a_word - temp_n_word;
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    uint8_t temp_reg_byte = static_cast<uint8_t>(temp_r_a_byte - n);
 
-    bool f_carry = (temp_r_a_word < temp_n_word);
+    bool f_carry = (temp_r_a_byte < n);
     reg.set_flag(FlagName::f_c, f_carry);
 
-    bool f_half_carry = ((temp_r_a_word & 0x000f) < (temp_n_word & 0x000f));
+    bool f_half_carry = ((temp_r_a_byte & 0x0f) < (n & 0x0f));
     reg.set_flag(FlagName::f_h, f_half_carry);
 
     reg.set_flag(FlagName::f_n, true);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
 
-    uint8_t temp_reg_byte = temp_reg_word & 0xff;
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -440,7 +438,7 @@ void Cpu::alu_add_hl(uint16_t n)
 void Cpu::alu_add_sp(Memory &mem)
 {
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
-    uint16_t temp_imm_word = read_opcode_byte(mem);
+    int8_t temp_imm_word = read_opcode_byte(mem);
 
     bool f_carry = ((temp_r_sp_word & 0x00ff) + (temp_imm_word & 0x00ff)) > 0x00ff;
     reg.set_flag(FlagName::f_c, f_carry);
@@ -1219,9 +1217,9 @@ void Cpu::ex_jp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 void Cpu::ex_jp_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
+    uint16_t temp_imm_word = read_opcode_word(mem);
     if (!f_z)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1230,9 +1228,9 @@ void Cpu::ex_jp_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_
 void Cpu::ex_jp_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
+    int16_t temp_imm_word = read_opcode_word(mem);
     if (!f_c)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1241,9 +1239,9 @@ void Cpu::ex_jp_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_
 void Cpu::ex_jp_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
+    uint16_t temp_imm_word = read_opcode_word(mem);
     if (f_z)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1252,9 +1250,9 @@ void Cpu::ex_jp_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
 void Cpu::ex_jp_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
+    uint16_t temp_imm_word = read_opcode_word(mem);
     if (f_c)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1722,7 +1720,7 @@ void Cpu::ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_p
 void Cpu::ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
-    uint16_t temp_r8_word = read_opcode_byte(mem);
+    int8_t temp_r8_word = read_opcode_byte(mem);
 
     bool f_carry = (temp_r_sp_word & 0x00ff) + (temp_r8_word & 0x00ff) > 0x00ff;
     reg.set_flag(FlagName::f_c, f_carry);
@@ -1757,6 +1755,14 @@ void Cpu::ex_pop_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_pref
 
     uint16_t temp_mem_word = stack_pop(mem);
     reg.set_register_byte_pair(self_first, self_second, temp_mem_word);
+}
+
+// 16-bit POP AF
+void ex_pop_af(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_mem_word = stack_pop(mem);
+    temp_mem_word &= 0xfff0;
+    reg.set_register_byte_pair(RegisterName::r_a, RegisterName::r_f, temp_mem_word);
 }
 
 // Opcode Prefix CB
