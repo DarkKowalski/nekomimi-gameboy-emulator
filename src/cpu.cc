@@ -191,9 +191,9 @@ void Cpu::alu_add(uint8_t n)
 
     reg.set_flag(FlagName::f_n, false);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
-
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -220,9 +220,9 @@ void Cpu::alu_adc(uint8_t n)
 
     reg.set_flag(FlagName::f_n, false);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
-
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -236,17 +236,19 @@ void Cpu::alu_adc(uint8_t n)
 // C - Set if no borrow
 void Cpu::alu_sub(uint8_t n)
 {
+    uint8_t temp_negative_n_byte = -n;
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
-    uint8_t temp_reg_byte = static_cast<uint8_t>(temp_r_a_byte - n);
+    uint16_t temp_reg_word = temp_r_a_byte + temp_negative_n_byte;
 
-    bool f_carry = (temp_r_a_byte < n);
+    bool f_carry = (temp_reg_word > 0x00ff);
     reg.set_flag(FlagName::f_c, f_carry);
 
-    bool f_half_carry = ((temp_r_a_byte & 0x0f) < (n & 0x0f));
+    bool f_half_carry = ((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) > 0x000f);
     reg.set_flag(FlagName::f_h, f_half_carry);
 
-    reg.set_flag(FlagName::f_n, true);
+    reg.set_flag(FlagName::f_n, false);
 
+    uint8_t temp_reg_byte = temp_reg_word & 0xff;
     reg.set_flag(FlagName::f_z, !temp_reg_byte);
 
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
@@ -262,22 +264,23 @@ void Cpu::alu_sub(uint8_t n)
 // C - Set if no borrow.
 void Cpu::alu_sbc(uint8_t n)
 {
-    uint16_t temp_n_word = n;
-    uint16_t temp_r_a_word = reg.get_register_byte(RegisterName::r_a);
-    uint16_t temp_carry_word = reg.get_flag(FlagName::f_c);
-    uint16_t temp_reg_word = temp_r_a_word - temp_carry_word - temp_n_word;
+    uint8_t temp_negative_n_byte = -n;
+    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
+    uint8_t temp_carry_byte = reg.get_flag(FlagName::f_c);
+    uint8_t temp_negative_carry_byte = -temp_carry_byte;
+    uint16_t temp_reg_word = temp_r_a_byte + temp_negative_n_byte + temp_negative_carry_byte;
 
-    bool f_carry = (temp_r_a_word < (temp_carry_word + temp_n_word));
+    bool f_carry = (temp_reg_word > 0x00ff);
     reg.set_flag(FlagName::f_c, f_carry);
 
-    bool f_half_carry = (temp_r_a_word & 0x000f) < (temp_carry_word + (temp_n_word & 0x000f));
+    bool f_half_carry = (((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) + (temp_negative_carry_byte & 0x0f)) > 0x0f);
     reg.set_flag(FlagName::f_h, f_half_carry);
 
-    reg.set_flag(FlagName::f_n, true);
-
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
+    reg.set_flag(FlagName::f_n, false);
 
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -414,9 +417,9 @@ uint8_t Cpu::alu_dec(uint8_t n)
 void Cpu::alu_add_hl(uint16_t n)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
-    uint16_t temp_reg_word = temp_r_hl_word + n;
+    uint32_t temp_reg_dword = temp_r_hl_word + n;
 
-    bool f_carry = temp_r_hl_word > (0xffff - n);
+    bool f_carry = temp_reg_dword > 0xffff;
     reg.set_flag(FlagName::f_c, f_carry);
 
     bool f_half_carry = ((temp_r_hl_word & 0x07ff) + (n & 0x07ff)) > 0x07ff;
@@ -424,6 +427,7 @@ void Cpu::alu_add_hl(uint16_t n)
 
     reg.set_flag(FlagName::f_n, false);
 
+    uint16_t temp_reg_word = temp_reg_dword & 0xffff;
     reg.set_register_byte_pair(RegisterName::r_h, RegisterName::r_l, temp_reg_word);
 }
 
@@ -1758,7 +1762,7 @@ void Cpu::ex_pop_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_pref
 }
 
 // 16-bit POP AF
-void ex_pop_af(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+void Cpu::ex_pop_af(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_mem_word = stack_pop(mem);
     temp_mem_word &= 0xfff0;
