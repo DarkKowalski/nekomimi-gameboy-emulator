@@ -796,6 +796,7 @@ void Cpu::ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
     temp_r_a_byte = alu_rlc(temp_r_a_byte);
     reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
+    reg.set_flag(FlagName::f_z, false);
 }
 
 // RLA
@@ -821,6 +822,7 @@ void Cpu::ex_rra(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
     temp_r_a_byte = alu_rr(temp_r_a_byte);
     reg.set_register_byte(RegisterName::r_a, temp_r_a_byte);
+    reg.set_flag(FlagName::f_z, false);
 }
 
 // 8-bit INC
