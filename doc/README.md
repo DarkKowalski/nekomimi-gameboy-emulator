@@ -104,6 +104,34 @@ The same as SUB, effect to Half Carry and Carry should be corrected.
 ### DEC
 The same as SUB, effect to Half Carry should be corrected
 
+### RLCA
+After comparing with Intel 8080 and Zilog 80, we find that decription of effect to Zero Flag is wrong.
+
+The correct version should be:
+
+Zero - Reset.
+
+### RRCA
+The same as RLCA,effect to Zero Flag should be corrected.
+
+The correct version should be:
+
+Zero - Reset.
+
+### RRA
+The same as RLCA,effect to Zero Flag should be corrected.
+
+The correct version should be:
+
+Zero - Reset.
+
+### RLA
+The same as RLCA,effect to Zero Flag should be corrected.
+
+The correct version should be:
+
+Zero - Reset.
+
 ## Reference
 [The Ultimate Game Boy Talk](https://youtu.be/HyzD8pNlpwI)
 

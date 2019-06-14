@@ -654,7 +654,7 @@ class Cpu
         handle_opcode_main[0x0e] = &Cpu::ex_ld_imm_to_byte;
         handle_opcode_main[0x0f] = &Cpu::ex_rrca;
 
-        handle_opcode_main[0x10] = nullptr;
+        handle_opcode_main[0x10] = &Cpu::ex_stop;
         handle_opcode_main[0x11] = &Cpu::ex_ld_imm_to_pair;
         handle_opcode_main[0x12] = &Cpu::ex_ld_byte_to_pair_mem;
         handle_opcode_main[0x13] = &Cpu::ex_inc_pair;
@@ -1469,6 +1469,8 @@ class Cpu
     // Opcode Main
     // NOP
     void ex_nop(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    // STOP
+    void ex_stop(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RLCA
     void ex_rlca(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // RLA
