@@ -241,17 +241,17 @@ void Cpu::alu_adc(uint8_t n)
 // C - Set if borrow form bit 8, which means it will NOT overflow to bit 8
 void Cpu::alu_sub(uint8_t n)
 {
-    uint8_t temp_negative_n_byte = -n;
-    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
-    uint16_t temp_reg_word = temp_r_a_byte + temp_negative_n_byte;
+    uint16_t temp_n_word = n;
+    uint16_t temp_r_a_word = reg.get_register_byte(RegisterName::r_a);
+    uint16_t temp_reg_word = temp_r_a_word - temp_n_word;
 
-    bool f_carry = (temp_reg_word > 0x00ff);
-    reg.set_flag(FlagName::f_c, !f_carry);
+    bool f_carry = (temp_r_a_word < temp_n_word);
+    reg.set_flag(FlagName::f_c, f_carry);
 
-    bool f_half_carry = ((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) > 0x0f;
-    reg.set_flag(FlagName::f_h, !f_half_carry);
+    bool f_half_carry = ((temp_r_a_word & 0x000f) < (temp_n_word & 0x000f));
+    reg.set_flag(FlagName::f_h, f_half_carry);
 
-    reg.set_flag(FlagName::f_n, false);
+    reg.set_flag(FlagName::f_n, true);
 
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
     reg.set_flag(FlagName::f_z, !temp_reg_byte);
@@ -274,24 +274,24 @@ void Cpu::alu_sub(uint8_t n)
 // C - Set if borrow form bit 8, which means it will NOT overflow to bit 8
 void Cpu::alu_sbc(uint8_t n)
 {
-    uint8_t temp_negative_n_byte = -n;
-    uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
-    uint8_t temp_carry_byte = reg.get_flag(FlagName::f_c);
-    uint8_t temp_negative_carry_byte = -temp_carry_byte;
-    uint16_t temp_reg_word = temp_r_a_byte + temp_negative_n_byte + temp_negative_carry_byte;
+    uint16_t temp_n_word = n;
+    uint16_t temp_r_a_word = reg.get_register_byte(RegisterName::r_a);
+    uint16_t temp_carry_word = reg.get_flag(FlagName::f_c);
+    uint16_t temp_reg_word = temp_r_a_word - temp_carry_word - temp_n_word;
 
-    bool f_carry = (temp_reg_word > 0x00ff);
-    reg.set_flag(FlagName::f_c, !f_carry);
+    bool f_carry = (temp_r_a_word < (temp_carry_word + temp_n_word));
+    reg.set_flag(FlagName::f_c, f_carry);
 
-    bool f_half_carry = (((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) + (temp_negative_carry_byte & 0x0f)) > 0x0f);
-    reg.set_flag(FlagName::f_h, !f_half_carry);
+    bool f_half_carry = (temp_r_a_word & 0x000f) < (temp_carry_word + (temp_n_word & 0x000f));
+    reg.set_flag(FlagName::f_h, f_half_carry);
 
-    reg.set_flag(FlagName::f_n, false);
+    reg.set_flag(FlagName::f_n, true);
 
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
     reg.set_flag(FlagName::f_z, !temp_reg_byte);
 
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
+
 }
 
 // Logically AND n with A, result in A.
@@ -365,6 +365,7 @@ void Cpu::alu_xor(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Set for no borrow. (Set if A < n.)
+// We mention the same problem in alu_sub
 void Cpu::alu_cp(uint8_t n)
 {
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
@@ -776,7 +777,7 @@ void Cpu::alu_jr(Memory &mem)
     int8_t temp_imm_byte = read_opcode_byte(mem);
     uint32_t temp_r_pc_dword = reg.get_register_word(RegisterName::r_pc);
     temp_r_pc_dword += temp_imm_byte;
-    uint16_t tem_r_pc_word = temp_r_pc_dword & 0xffff;
+    uint16_t temp_r_pc_word = temp_r_pc_dword & 0xffff;
     reg.set_register_word(RegisterName::r_pc, temp_r_pc_word);
 }
 
