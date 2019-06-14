@@ -776,7 +776,8 @@ void Cpu::alu_jr(Memory &mem)
     int8_t temp_imm_byte = read_opcode_byte(mem);
     uint32_t temp_r_pc_dword = reg.get_register_word(RegisterName::r_pc);
     temp_r_pc_dword += temp_imm_byte;
-    reg.set_register_byte(RegisterName::r_pc, temp_r_pc_dword);
+    uint16_t tem_r_pc_word = temp_r_pc_dword & 0xffff;
+    reg.set_register_word(RegisterName::r_pc, temp_r_pc_word);
 }
 
 // Decode and execute opcode
