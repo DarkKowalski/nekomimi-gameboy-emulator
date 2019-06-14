@@ -1890,7 +1890,7 @@ void Cpu::ex_bit_byte(Memory &mem, uint8_t opcode_prefix_cb)
     uint8_t bit = args.arg_bit;
     uint8_t temp_reg_byte = reg.get_register_byte(self);
 
-    alu_bit(self, bit);
+    alu_bit(temp_reg_byte, bit);
 }
 // 8-bit RES
 void Cpu::ex_res_byte(Memory &mem, uint8_t opcode_prefix_cb)
