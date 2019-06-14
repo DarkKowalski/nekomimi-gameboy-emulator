@@ -234,6 +234,11 @@ void Cpu::alu_adc(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Set if no borrow
+// H/C description on cpu manual may be wrong
+// Consider more about Zilog 80 and Intel 8080 version
+// We here use
+// H - Set if borrow from bit 4, which means it will NOT overflow to bit 4
+// C - Set if borrow form bit 8, which means it will NOT overflow to bit 8
 void Cpu::alu_sub(uint8_t n)
 {
     uint8_t temp_negative_n_byte = -n;
@@ -241,10 +246,10 @@ void Cpu::alu_sub(uint8_t n)
     uint16_t temp_reg_word = temp_r_a_byte + temp_negative_n_byte;
 
     bool f_carry = (temp_reg_word > 0x00ff);
-    reg.set_flag(FlagName::f_c, f_carry);
+    reg.set_flag(FlagName::f_c, !f_carry);
 
-    bool f_half_carry = ((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) > 0x000f);
-    reg.set_flag(FlagName::f_h, f_half_carry);
+    bool f_half_carry = ((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) > 0x0f;
+    reg.set_flag(FlagName::f_h, !f_half_carry);
 
     reg.set_flag(FlagName::f_n, false);
 
@@ -262,6 +267,11 @@ void Cpu::alu_sub(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Set if no borrow.
+// H/C description on cpu manual may be wrong
+// Consider more about Zilog 80 and Intel 8080 version
+// We here use
+// H - Set if borrow from bit 4, which means it will NOT overflow to bit 4
+// C - Set if borrow form bit 8, which means it will NOT overflow to bit 8
 void Cpu::alu_sbc(uint8_t n)
 {
     uint8_t temp_negative_n_byte = -n;
@@ -271,10 +281,10 @@ void Cpu::alu_sbc(uint8_t n)
     uint16_t temp_reg_word = temp_r_a_byte + temp_negative_n_byte + temp_negative_carry_byte;
 
     bool f_carry = (temp_reg_word > 0x00ff);
-    reg.set_flag(FlagName::f_c, f_carry);
+    reg.set_flag(FlagName::f_c, !f_carry);
 
     bool f_half_carry = (((temp_r_a_byte & 0x0f) + (temp_negative_n_byte & 0x0f) + (temp_negative_carry_byte & 0x0f)) > 0x0f);
-    reg.set_flag(FlagName::f_h, f_half_carry);
+    reg.set_flag(FlagName::f_h, !f_half_carry);
 
     reg.set_flag(FlagName::f_n, false);
 
@@ -392,12 +402,16 @@ uint8_t Cpu::alu_inc(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Not affected
+// H description on cpu manual may be wrong
+// Consider more about Zilog 80 and Intel 8080 version
+// We here use
+// H - Set if borrow from bit 4, which means it will NOT overflow to bit 4
 uint8_t Cpu::alu_dec(uint8_t n)
 {
     uint8_t temp_reg_byte = n - 0x01;
 
-    bool f_half_carry = !(n & 0x0f);
-    reg.set_flag(FlagName::f_h, f_half_carry);
+    bool f_half_carry = (n & 0x0f);
+    reg.set_flag(FlagName::f_h, !f_half_carry);
 
     reg.set_flag(FlagName::f_n, true);
 
