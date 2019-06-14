@@ -328,7 +328,7 @@ const PackedArgs opcode_args_main[256] =
     NULLARG, // 0xef null
 
     NULLARG, // 0xf0 null
-    PackedArgs(RegisterName::r_a, RegisterName::r_f, NULLREG, NULLREG, NULLBIT), // 0xf1 self AF
+    NULLARG, // 0xf1 null
     NULLARG, // 0xf2 null
     NULLARG, // 0xf3 null
     NULLARG, // 0xf4 null
@@ -893,7 +893,7 @@ class Cpu
         handle_opcode_main[0xef] = &Cpu::ex_rst_28;
         
         handle_opcode_main[0xf0] = &Cpu::ex_ldh_n_zp_to_byte;
-        handle_opcode_main[0xf1] = &Cpu::ex_pop_pair;
+        handle_opcode_main[0xf1] = &Cpu::ex_pop_af;
         handle_opcode_main[0xf2] = &Cpu::ex_ld_c_zp_to_byte;
         handle_opcode_main[0xf3] = &Cpu::ex_di;
         handle_opcode_main[0xf4] = nullptr;
@@ -1696,6 +1696,8 @@ class Cpu
     void ex_push_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
     // 16-bit POP
     void ex_pop_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
+    // POP AF
+    void ex_pop_af(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb);
 
     // Opcode Prefix CB
     // 8-bit RLC

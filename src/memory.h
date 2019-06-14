@@ -2,13 +2,16 @@
 
 #ifndef GAMEBOY_MEMORY_H
 #define GAMEBOY_MEMORY_H
+#include "cartridge.h"
 #include <cstdint>
+
 namespace gameboy
 {
 
 class Memory
 {
-  public:
+public:
+    gameboy::Cartridge cartridge;
     uint8_t memory_byte[65536]; // Entire Address Bus: 64 KB
 
     // Getter and setter for memory (8-bit version)

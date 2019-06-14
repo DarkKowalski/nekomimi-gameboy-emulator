@@ -76,9 +76,43 @@ In this entire project, we define a WORD as 16 bits just like x86 and ARM, and a
 The whole system is memory bound, so it can only calculate as fast as memory which provides data
 
 In this project, when we use cycles, it means machine cycles at 1 MHz
+
+## CPU Manual Erratum
+For the most common and easy to get version of Sharp LR35902 CPU Manual:
+
+[*Game Boy CPU Manual - Version: 1.01 by DP*](./gameboy-cpu-manual.pdf)
+### POP AF
+When we pop 16-bit unsigned number to register pair AF, low 4 bits of register F should be reset to 0.
+
+For example, if we pop 0xFFFF on stack to AF, then AF should be 0xFFF0.
+
+### SUB
+After comparing with Intel 8080 and Zilog 80, we find that decriptions of effect to Carry Flag and Half Carry
+are completely wrong.
+
+The correct version should be:
+
+Half Carry - Set if borrow from bit 4, which means it will NOT overflow to bit 4
+
+Carry - Set if borrow form bit 8, which means it will NOT overflow to bit 8
+
+More details on Intel 8080 cpu manual.
+
+### SBC
+The same as SUB, effect to Half Carry and Carry should be corrected.
+
+### DEC
+The same as SUB, effect to Half Carry should be corrected
+
 ## Reference
 [The Ultimate Game Boy Talk](https://youtu.be/HyzD8pNlpwI)
 
 [GameBoy CPU(LR35902) instruction set](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
 
 [Gameboy Memory Map](http://gbdev.gg8.se/wiki/articles/Memory_Map)
+
+[Gameboy CPU Manual](./gameboy-cpu-manual.pdf)
+
+[Intel 8080 CPU Manual](./intel8080-cpu-manual.pdf)
+
+[Zilog 80 CPU Manual](./zilog80-cpu-manual.pdf)

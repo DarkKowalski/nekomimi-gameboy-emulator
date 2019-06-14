@@ -191,9 +191,9 @@ void Cpu::alu_add(uint8_t n)
 
     reg.set_flag(FlagName::f_n, false);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
-
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -220,9 +220,9 @@ void Cpu::alu_adc(uint8_t n)
 
     reg.set_flag(FlagName::f_n, false);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
-
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -234,6 +234,11 @@ void Cpu::alu_adc(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Set if no borrow
+// H/C description on cpu manual may be wrong
+// Consider more about Zilog 80 and Intel 8080 version
+// We here use
+// H - Set if borrow from bit 4, which means it will NOT overflow to bit 4
+// C - Set if borrow form bit 8, which means it will NOT overflow to bit 8
 void Cpu::alu_sub(uint8_t n)
 {
     uint16_t temp_n_word = n;
@@ -248,9 +253,9 @@ void Cpu::alu_sub(uint8_t n)
 
     reg.set_flag(FlagName::f_n, true);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
-
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
 }
 
@@ -262,6 +267,11 @@ void Cpu::alu_sub(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Set if no borrow.
+// H/C description on cpu manual may be wrong
+// Consider more about Zilog 80 and Intel 8080 version
+// We here use
+// H - Set if borrow from bit 4, which means it will NOT overflow to bit 4
+// C - Set if borrow form bit 8, which means it will NOT overflow to bit 8
 void Cpu::alu_sbc(uint8_t n)
 {
     uint16_t temp_n_word = n;
@@ -277,10 +287,11 @@ void Cpu::alu_sbc(uint8_t n)
 
     reg.set_flag(FlagName::f_n, true);
 
-    reg.set_flag(FlagName::f_z, !temp_reg_word);
-
     uint8_t temp_reg_byte = temp_reg_word & 0xff;
+    reg.set_flag(FlagName::f_z, !temp_reg_byte);
+
     reg.set_register_byte(RegisterName::r_a, temp_reg_byte);
+
 }
 
 // Logically AND n with A, result in A.
@@ -354,6 +365,7 @@ void Cpu::alu_xor(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Set for no borrow. (Set if A < n.)
+// We mention the same problem in alu_sub
 void Cpu::alu_cp(uint8_t n)
 {
     uint8_t temp_r_a_byte = reg.get_register_byte(RegisterName::r_a);
@@ -391,12 +403,16 @@ uint8_t Cpu::alu_inc(uint8_t n)
 // N - Set.
 // H - Set if no borrow from bit 4.
 // C - Not affected
+// H description on cpu manual may be wrong
+// Consider more about Zilog 80 and Intel 8080 version
+// We here use
+// H - Set if borrow from bit 4, which means it will NOT overflow to bit 4
 uint8_t Cpu::alu_dec(uint8_t n)
 {
     uint8_t temp_reg_byte = n - 0x01;
 
-    bool f_half_carry = !(n & 0x0f);
-    reg.set_flag(FlagName::f_h, f_half_carry);
+    bool f_half_carry = (n & 0x0f);
+    reg.set_flag(FlagName::f_h, !f_half_carry);
 
     reg.set_flag(FlagName::f_n, true);
 
@@ -416,9 +432,9 @@ uint8_t Cpu::alu_dec(uint8_t n)
 void Cpu::alu_add_hl(uint16_t n)
 {
     uint16_t temp_r_hl_word = reg.get_register_byte_pair(RegisterName::r_h, RegisterName::r_l);
-    uint16_t temp_reg_word = temp_r_hl_word + n;
+    uint32_t temp_reg_dword = temp_r_hl_word + n;
 
-    bool f_carry = temp_r_hl_word > (0xffff - n);
+    bool f_carry = temp_reg_dword > 0xffff;
     reg.set_flag(FlagName::f_c, f_carry);
 
     bool f_half_carry = ((temp_r_hl_word & 0x07ff) + (n & 0x07ff)) > 0x07ff;
@@ -426,6 +442,7 @@ void Cpu::alu_add_hl(uint16_t n)
 
     reg.set_flag(FlagName::f_n, false);
 
+    uint16_t temp_reg_word = temp_reg_dword & 0xffff;
     reg.set_register_byte_pair(RegisterName::r_h, RegisterName::r_l, temp_reg_word);
 }
 
@@ -440,7 +457,7 @@ void Cpu::alu_add_hl(uint16_t n)
 void Cpu::alu_add_sp(Memory &mem)
 {
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
-    uint16_t temp_imm_word = read_opcode_byte(mem);
+    int8_t temp_imm_word = read_opcode_byte(mem);
 
     bool f_carry = ((temp_r_sp_word & 0x00ff) + (temp_imm_word & 0x00ff)) > 0x00ff;
     reg.set_flag(FlagName::f_c, f_carry);
@@ -642,10 +659,12 @@ uint8_t Cpu::alu_rrc(uint8_t n)
 // C - Contains old bit 0 data.
 uint8_t Cpu::alu_rr(uint8_t n)
 {
-    bool f_carry = (n & 0x01) == 0x01;
-    uint8_t temp_reg_byte = f_carry ? ((n >> 1) | 0x80) : (n >> 1);
+    uint8_t temp_carry_byte = reg.get_flag(FlagName::f_c);
+    uint8_t temp_reg_byte = (n >> 1) | (temp_carry_byte << 7);
 
+    bool f_carry = (n & 0x01) == 0x01;
     reg.set_flag(FlagName::f_c, f_carry);
+
     reg.set_flag(FlagName::f_h, false);
     reg.set_flag(FlagName::f_n, false);
     reg.set_flag(FlagName::f_z, !temp_reg_byte);
@@ -755,14 +774,11 @@ uint8_t Cpu::alu_res(uint8_t a, uint8_t b)
 // n = one byte signed immediate value
 void Cpu::alu_jr(Memory &mem)
 {
-    uint16_t temp_r_pc_word = reg.get_register_word(RegisterName::r_pc);
-    int8_t temp_imm_byte = mem.get_memory_byte(temp_r_pc_word);
-
-    int32_t temp_r_pc_dword = temp_r_pc_word;
-    temp_r_pc_dword += (temp_imm_byte + 1);
-
-    uint16_t temp_reg_word = (temp_r_pc_dword & 0xffff);
-    reg.set_register_word(RegisterName::r_pc, temp_reg_word);
+    int8_t temp_imm_byte = read_opcode_byte(mem);
+    uint32_t temp_r_pc_dword = reg.get_register_word(RegisterName::r_pc);
+    temp_r_pc_dword += temp_imm_byte;
+    uint16_t temp_r_pc_word = temp_r_pc_dword & 0xffff;
+    reg.set_register_word(RegisterName::r_pc, temp_r_pc_word);
 }
 
 // Decode and execute opcode
@@ -1223,9 +1239,9 @@ void Cpu::ex_jp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 void Cpu::ex_jp_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
+    uint16_t temp_imm_word = read_opcode_word(mem);
     if (!f_z)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1234,9 +1250,9 @@ void Cpu::ex_jp_nz(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_
 void Cpu::ex_jp_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
+    int16_t temp_imm_word = read_opcode_word(mem);
     if (!f_c)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1245,9 +1261,9 @@ void Cpu::ex_jp_nc(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_
 void Cpu::ex_jp_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_z = reg.get_flag(FlagName::f_z);
+    uint16_t temp_imm_word = read_opcode_word(mem);
     if (f_z)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1256,9 +1272,9 @@ void Cpu::ex_jp_z(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_c
 void Cpu::ex_jp_c(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     bool f_c = reg.get_flag(FlagName::f_c);
+    uint16_t temp_imm_word = read_opcode_word(mem);
     if (f_c)
     {
-        uint16_t temp_imm_word = read_opcode_word(mem);
         reg.set_register_word(RegisterName::r_pc, temp_imm_word);
     }
 }
@@ -1706,7 +1722,7 @@ void Cpu::ex_ld_imm_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_
 // LD 16-bit SP to memory
 void Cpu::ex_ld_sp_to_mem(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
-    uint16_t temp_address_word = read_opcode_byte(mem);
+    uint16_t temp_address_word = read_opcode_word(mem);
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
 
     mem.set_memory_word(temp_address_word, temp_r_sp_word);
@@ -1726,7 +1742,7 @@ void Cpu::ex_ld_hl_to_sp(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_p
 void Cpu::ex_ld_sp_r8_to_hl(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
 {
     uint16_t temp_r_sp_word = reg.get_register_word(RegisterName::r_sp);
-    uint16_t temp_r8_word = read_opcode_byte(mem);
+    int8_t temp_r8_word = read_opcode_byte(mem);
 
     bool f_carry = (temp_r_sp_word & 0x00ff) + (temp_r8_word & 0x00ff) > 0x00ff;
     reg.set_flag(FlagName::f_c, f_carry);
@@ -1761,6 +1777,14 @@ void Cpu::ex_pop_pair(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_pref
 
     uint16_t temp_mem_word = stack_pop(mem);
     reg.set_register_byte_pair(self_first, self_second, temp_mem_word);
+}
+
+// 16-bit POP AF
+void Cpu::ex_pop_af(Memory &mem, uint8_t opcode_main, uint8_t &ref_opcode_prefix_cb)
+{
+    uint16_t temp_mem_word = stack_pop(mem);
+    temp_mem_word &= 0xfff0;
+    reg.set_register_byte_pair(RegisterName::r_a, RegisterName::r_f, temp_mem_word);
 }
 
 // Opcode Prefix CB
@@ -1868,7 +1892,7 @@ void Cpu::ex_bit_byte(Memory &mem, uint8_t opcode_prefix_cb)
     uint8_t bit = args.arg_bit;
     uint8_t temp_reg_byte = reg.get_register_byte(self);
 
-    alu_bit(self, bit);
+    alu_bit(temp_reg_byte, bit);
 }
 // 8-bit RES
 void Cpu::ex_res_byte(Memory &mem, uint8_t opcode_prefix_cb)
