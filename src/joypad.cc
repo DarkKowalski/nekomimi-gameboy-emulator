@@ -21,14 +21,14 @@ void Joypad::joypad_interrupts(Memory &mem)
 
 void Joypad::write_result(Memory &mem)
 {
-    //printf("Write %d to Joypad (0xFF00)\n",Joypad::temp_ff00);
-    if (Joypad::column_controls)
+    uint8_t column_requested = mem.get_memory_byte(0xFF00) & 0x30;
+    if (column_requested == 0x10)
     {
-        Joypad::temp_ff00 = Joypad::key_column + Joypad::keys_controls;
+        Joypad::temp_ff00 = 0x10 + Joypad::keys_controls;
     }
-    else
+    if (column_requested == 0x20)
     {
-        Joypad::temp_ff00 = Joypad::key_column + Joypad::keys_directions;
+        Joypad::temp_ff00 = 0x20 + Joypad::keys_directions;
     }
     mem.set_memory_byte(JOYPAD_ADDRESS, Joypad::temp_ff00);
 }

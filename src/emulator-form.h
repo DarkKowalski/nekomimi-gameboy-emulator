@@ -24,16 +24,18 @@ public:
     // 4 colors on screen
     uint8_t color_palatte[4][3] =
         {
+            /*
             {0, 0, 0},       //Darkest (00)
             {104, 86, 83},   //01
             {222, 182, 175}, //10
             {255, 255, 255}  //Brightest (11)
-            /*
+            */
+
         {255, 255, 255},       //Darkest (00)
         {222, 182, 175},   //01
         {104, 86, 83}, //10
         {0, 0, 0}  //Brightest (11)
-        */
+
     };
 
     // handle Joypad input in gpu loop

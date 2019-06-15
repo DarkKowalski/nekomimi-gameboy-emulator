@@ -16,6 +16,9 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
 
     while (SDL_PollEvent(&(Emulatorform::joypad_event)))
     {
+        the_joypad.temp_ff00 = mem.get_memory_byte(0xFF00);
+        the_joypad.temp_ff00 &= 0x30;
+        mem.set_memory_byte(0xFF00, the_joypad.temp_ff00);
 
         if (joypad_event.type == SDL_QUIT)
             return false;
@@ -96,7 +99,7 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
                 the_joypad.keys_controls &= 0x7;
                 break;
             }
-            the_joypad.joypad_interrupts(mem);
+            //the_joypad.joypad_interrupts(mem);
         }
 
         // when you release keys
