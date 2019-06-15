@@ -1,7 +1,22 @@
 #include "motherboard.h"
 
-using namespace gameboy;
-using namespace std;
+using gameboy::Motherboard;
+using gameboy::Cpu;
+using gameboy::Register;
+using gameboy::RegisterName;
+using gameboy::FlagName;
+using gameboy::Memory;
+using gameboy::Cartridge;
+
+using std::cout;
+using std::endl;
+using std::hex;
+
+using std::this_thread::sleep_for;
+
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
+using std::chrono::duration;
 
 void debug_flag_out(Cpu &cpu)
 {
@@ -43,7 +58,7 @@ void debug_out(uint8_t opcode_main, uint8_t opcode_cb, uint8_t cycle, Cpu &cpu)
     cout << "=============================================================================" << endl;
 }
 
-void Motherboard::power_on(int argc, char *argv[])
+bool Motherboard::power_on(int argc, char *argv[])
 {
     cpu.power_on();
 
@@ -100,13 +115,18 @@ void Motherboard::power_on(int argc, char *argv[])
     mem.set_memory_byte(0xFFFF, 0x00);
 
     // cartridge power on, load file and check headers
-    mem.cartridge.power_on(rom_file);
+    if (!mem.cartridge.power_on(rom_file))
+    {
+        return false;
+    }
 
     // create a white window
     // r:255
     // g:255
     // b:255
     form.create_window(SCREEN_WIDTH, SCREEN_HEIGHT, mem.cartridge.rom_name, 255, 255, 255);
+
+    return true;
 }
 
 void Motherboard::loop(void)
@@ -115,19 +135,24 @@ void Motherboard::loop(void)
     {
         if (form.get_joypad_input(the_joypad, mem)) //get KEYS
         {
-            uint8_t cpu_cycle = cpu.next(mem); //get TIMING
-            //printf("Cycles add: %d\n",timing);
-            ppu.ppu_main(4 * cpu_cycle, mem, form); //fresh WINDOW
-            timer.add_time(4 * cpu_cycle, mem);     //fresh TIMER
+            auto start_time = high_resolution_clock::now();
+
+            uint8_t cpu_cycle = cpu.next(mem);
+            ppu.ppu_main(mem.cartridge.auto_optimization * cpu_cycle, mem, form);
+            timer.add_time(4 * cpu_cycle, mem);
             //debug_out(0x00, 0x00, timing, cpu);
 
-            // if using MBC1 we check whether we should switch bank and switch if necessary
-            //if (mem.cartridge.using_MBC1)
-            //{
-            //    mem.cartridge.check_whether_to_switch_bank(mem);
-            //}
+            auto end_time = high_resolution_clock::now();
+
+            duration<double> fired_milliseconds = end_time - start_time;
+            duration<double> sleep_milliseconds = milliseconds(cpu_cycle * (20)) - fired_milliseconds;
+
+            //sleep_for(sleep_milliseconds);
+
         }
         else
+        {
             break; //quit
+        }
     }
 }

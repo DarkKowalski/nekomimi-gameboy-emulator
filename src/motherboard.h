@@ -11,6 +11,8 @@
 #include "memory.h"
 #include "cartridge.h"
 #include "emulator-form.h"
+#include <chrono>
+#include <thread>
 
 namespace gameboy
 {
@@ -27,7 +29,7 @@ public:
     gameboy::Timer timer;
 
     // power on sequence
-    void power_on(int argc, char *argv[]);
+    bool power_on(int argc, char *argv[]);
 
     // work loop
     void loop(void);
