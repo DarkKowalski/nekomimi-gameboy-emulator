@@ -5,7 +5,7 @@ using namespace gameboy;
 void Joypad::joypad_interrupts(Memory &mem)
 {
     // get current IF status
-    uint8_t current_interrupt = mem.get_memory_byte(IF_Address);
+    uint8_t current_interrupt = mem.get_memory_byte(IF_ADDRESS);
 
     // if ... we request a joypad interrupt
     if ((Joypad::key_column == 0x10 && Joypad::keys_controls != 0x0f) ||
@@ -15,7 +15,7 @@ void Joypad::joypad_interrupts(Memory &mem)
         current_interrupt = change_binary_digit(current_interrupt, 4, true);
 
         // write back to memory
-        mem.set_memory_byte(IF_Address, current_interrupt);
+        mem.set_memory_byte(IF_ADDRESS, current_interrupt);
     }
 }
 

@@ -11,24 +11,26 @@ namespace gameboy
 class Timer
 {
 public:
-    uint16_t increase(uint8_t timing, Memory &mem);
+    Timer()
+    {
+        counter = 0;
+        divider = 0;
+        reg_div = 0;//reg means register divider ff04
+        reg_tima = 0;//counter ff05
+        reg_tma = 0;//modulator ff06
+        reg_tac = 0;//control ff07
+    };
+        uint64_t counter;
+        uint64_t divider;
+        uint8_t reg_div;//reg means register divider ff04
+        uint8_t reg_tima;//counter ff05
+        uint8_t reg_tma;//modulator ff06
+        uint8_t reg_tac;//control ff07
+    // 4 * cycle!
+    void add_time(uint8_t cycle, Memory &mem);
+    void refresh_timer_register(Memory &mem);
+    void set_timer_register(Memory &mem);
 
-private:
-    uint16_t _clock_main = 0;
-    uint16_t _clock_sub = 0;
-    uint16_t _clock_div = 0;
-
-    uint16_t _reg_div = 0;
-    uint16_t _reg_tima = 0;
-    uint16_t _reg_tma = 0;
-    uint16_t _reg_tac = 0;
-
-    uint16_t threshold = 0;
-
-    bool check(Memory &mem);
-    bool step(Memory &mem);
-    uint16_t rb(uint16_t addr);
-    void wb(uint16_t addr, uint8_t val);
 };
 } // namespace gameboy
 
