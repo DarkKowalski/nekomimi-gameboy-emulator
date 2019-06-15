@@ -6,7 +6,7 @@
 #include "cpu.h"
 #include "register.h"
 #include "timer.h"
-#include "gpu.h"
+#include "ppu.h"
 #include "joypad.h"
 #include "memory.h"
 #include "cartridge.h"
@@ -23,7 +23,7 @@ public:
     gameboy::Emulatorform form;
     gameboy::Ppu ppu;
     gameboy::Joypad the_joypad;
-    gameboy::Cartridge cartridge;
+    //gameboy::Cartridge cartridge;
     gameboy::Timer timer;
 
     // power on sequence
