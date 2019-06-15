@@ -6,6 +6,7 @@
 
 #include "miscellaneous.h"
 #include <math.h>
+#include <cstring>
 
 // target is Super Mario Land (64 KB)
 #define ROM_SIZE 65536
@@ -14,7 +15,7 @@
 #define BANK_SIZE 0x4000
 
 #define MBC1_MAGIC_NUMBER_START_ADDRESS 0x1FFF
-#define MBC1_MAGIC_NUMBER_END_ADDRESS 0x3FFF
+#define MBC1_MAGIC_NUMBER_END_ADDRESS 0x4000
 //#define RAM_SIZE_ADDRESS 0x0149
 
 namespace gameboy
@@ -41,6 +42,8 @@ public:
     //
     char rom_name[15];
 
+    uint8_t auto_optimization = 1;
+
     // file
     FILE *rom_file;
 
@@ -50,7 +53,7 @@ public:
 
     // though we only want to run Super Mario Land (?)
     // we still need to write a function to judge whether the cartridge type is MBC1 or not
-    void check_cartridge_headers(void);
+    bool check_cartridge_headers(void);
 
     // load rom to ram
     // support ROM only and MBC1
@@ -126,7 +129,10 @@ public:
     //void init_memory(gameboy::Memory &mem);
 
     // cartridge power on modi
-    void power_on(std::string arg_rom_file);
+    bool power_on(std::string arg_rom_file);
+
+    // auto optimization
+    void ppu_optimizaion(void);
 
     // cartridge get and set byte
     uint8_t get_cartridge_byte(uint16_t address);
