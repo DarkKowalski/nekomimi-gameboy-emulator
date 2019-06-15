@@ -15,4 +15,3 @@ bool is_out_of_bound(uint8_t x, uint8_t y)
 {
     return x < 0 && x >= SCREEN_WIDTH && y < 0 && y >= SCREEN_HEIGHT;
 }
-
