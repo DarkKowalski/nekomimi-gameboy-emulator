@@ -105,7 +105,7 @@ public:
     // 20 clocks for OAMSearch
     void oam_search(Memory &mem);
     // 43 clocks for PixelTransfer (DMA)
-    void pixel_transfer(void);
+    void pixel_transfer(Memory &mem);
     // 51 clock0s for HBlank
     void h_blank(Memory &mem, Emulatorform &form);
     // for last 10 lines * (20+43+51) clocks per line
@@ -133,6 +133,9 @@ public:
 
     // reset interrupt registers (IF)
     void reset_interrupt_registers(Memory &mem);
+
+    // mix tile color
+    uint8_t mix_tile_colors(int bit, uint8_t tile_data_bytes_line_one, uint8_t tile_data_bytes_line_two);
 
 private:
     // inner clock

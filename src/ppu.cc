@@ -34,7 +34,7 @@ void Ppu::ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form)
         {
             ppu_inner_clock = ppu_inner_clock - 172;
             set_mode(PpuMode::mode_hblank, mem);
-            pixel_transfer();
+            pixel_transfer(mem);
         }
     }
 
@@ -110,8 +110,14 @@ void Ppu::oam_search(Memory &mem)
     return;
 }
 
-void Ppu::pixel_transfer(void)
+void Ppu::pixel_transfer(Memory &mem)
 {
+    uint8_t DMA = mem.get_memory_byte(DMA_ADDRESS);
+    for (uint8_t bytes = 0; bytes <= 0xA0; bytes++)
+    {
+        uint16_t address_source = DMA * 0x0100 + bytes;
+        mem.set_memory_byte(0xFE00 + bytes, mem.get_memory_byte(address_source));
+    }
 }
 
 void Ppu::h_blank(Memory &mem, Emulatorform &form)
@@ -153,60 +159,15 @@ void Ppu::set_mode(PpuMode mode, Memory &mem)
     STAT = STAT & 0xFC;
     STAT = STAT | (mode & 0x03);
 
-    /*
-    if (mode == PpuMode::mode_hblank)
-    {
-        STAT=change_binary_digit(STAT, 0, false);
-        STAT=change_binary_digit(STAT, 1, false);
-        STAT=change_binary_digit(STAT, 3, true);
-        STAT=change_binary_digit(STAT, 4, false);
-        STAT=change_binary_digit(STAT, 5, false);
-    }
-    if (mode == PpuMode::mode_vblank)
-    {
-        STAT=change_binary_digit(STAT, 0, true);
-        STAT=change_binary_digit(STAT, 1, false);
-        STAT=change_binary_digit(STAT, 3, false);
-        STAT=change_binary_digit(STAT, 4, true);
-        STAT=change_binary_digit(STAT, 5, false);
-    }
-    if (mode == PpuMode::mode_oam_search)
-    {
-        STAT=change_binary_digit(STAT, 0, false);
-        STAT=change_binary_digit(STAT, 1, true);
-        STAT=change_binary_digit(STAT, 3, false);
-        STAT=change_binary_digit(STAT, 4, false);
-        STAT=change_binary_digit(STAT, 5, true);
-    }
-    if (mode == PpuMode::mode_pixel_transfer)
-    {
-        STAT=change_binary_digit(STAT, 0, true);
-        STAT=change_binary_digit(STAT, 1, true);
-        STAT=change_binary_digit(STAT, 3, false);
-        STAT=change_binary_digit(STAT, 4, false);
-        STAT=change_binary_digit(STAT, 5, false);
-    }
-    */
-
     // v_blank Interrupt
     if (mode == PpuMode::mode_vblank)
     {
         IF = change_binary_digit(IF, 0, true);
     }
 
-    // LCDC Interrupt
-    // when in mode 0, 1, 2, or LY==LYC
-    /*
-    if (get_binary_digit(STAT, 5) +
-            get_binary_digit(STAT, 4) +
-            get_binary_digit(STAT, 3) +
-            get_binary_digit(STAT, 2) >=
-            1)
-    */
-
     if ((mode == PpuMode::mode_hblank && get_binary_digit(STAT, 3)) ||
-        (mode == PpuMode::mode_vblank && get_binary_digit(STAT, 4)) ||
-        (mode == PpuMode::mode_oam_search && get_binary_digit(STAT, 5)))
+            (mode == PpuMode::mode_vblank && get_binary_digit(STAT, 4)) ||
+            (mode == PpuMode::mode_oam_search && get_binary_digit(STAT, 5)))
 
     {
         IF = change_binary_digit(IF, 1, true);
@@ -219,24 +180,6 @@ void Ppu::set_mode(PpuMode mode, Memory &mem)
 
 void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
 {
-    //int16_t k; // for k--
-
-    // result of draw_line, which will be sent to form.screen_buffer
-    //uint8_t line_buffer[SCREEN_WIDTH] = 0;
-
-    // which position is currently under rendering
-    //uint8_t position_in_line = 0;
-
-    // which tile is currently under rendering or operation
-    //uint8_t tile_in_line = 0;
-
-    // background according to the background map
-    //uint8_t background_buffer[256][256] = {0};
-
-    // background according to SCY and SCX
-    //uint8_t background_buffer_cut[SCREEN_HEIGHT][SCREEN_WIDTH] = {0};
-    //uint8_t background_buffer_screen[SCREEN_HEIGHT][SCREEN_WIDTH] = {0};
-
     if (line_number_y >= SCREEN_HEIGHT)
     {
         return;
@@ -257,18 +200,18 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
     // TILE_START_ADDRESS + j * 16 +(i-1) * 2 and TILE_START_ADDRESS + j*16 + (i-1) * 2 + 1
 
     // judge bit 4 in LCDC (BG & Windows Tile Data)
-    bool background_tile_data_ADDRESS_flag = get_binary_digit(LCDC, 4);
+    bool background_tile_data_address_flag = get_binary_digit(LCDC, 4);
 
-    uint16_t background_tile_data_ADDRESS_start = 0;
+    uint16_t background_tile_data_start_address = 0;
 
-    if (background_tile_data_ADDRESS_flag)
+    if (background_tile_data_address_flag)
     {
-        background_tile_data_ADDRESS_start = 0x8000;
+        background_tile_data_start_address = 0x8000;
     }
     else
     {
         // use signed
-        background_tile_data_ADDRESS_start = 0x9000;
+        background_tile_data_start_address = 0x9000;
     }
 
     // get background tile map Address
@@ -276,17 +219,17 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
     // 1: $9C00-$9FFF
 
     // judge bit 3 in LCDC (BG Tile Map Address)
-    bool background_tile_map_ADDRESS_flag = get_binary_digit(LCDC, 3);
+    bool background_tile_map_address_flag = get_binary_digit(LCDC, 3);
 
-    uint16_t background_tile_map_ADDRESS_start = 0;
+    uint16_t background_tile_map_start_address = 0;
 
-    if (background_tile_map_ADDRESS_flag)
+    if (background_tile_map_address_flag)
     {
-        background_tile_map_ADDRESS_start = 0x9C00;
+        background_tile_map_start_address = 0x9C00;
     }
     else
     {
-        background_tile_map_ADDRESS_start = 0x9800;
+        background_tile_map_start_address = 0x9800;
     }
 
     // judge bit 0 in LCDC (BG Enable)
@@ -302,9 +245,6 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
     // for example the # is 0x04
     // we *find* the 0x04 tile with line 1 in address 0x8040 and 0x8041
     // 0x8040 = 0x8000 + 0x04 * 0x10
-    auto mix_tile_colors = [](int bit, uint8_t tile_data_bytes_line_one, uint8_t tile_data_bytes_line_two) -> int {
-        return (((tile_data_bytes_line_one >> bit) & 1) << 1) | ((tile_data_bytes_line_two >> bit) & 1);
-    };
 
     // render background
     if (render_background)
@@ -331,20 +271,20 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
             if (tile_x != last_tile_x)
             {
                 // get original tile number
-                int tmp_tile_index = mem.get_memory_byte(background_tile_map_ADDRESS_start + (tile_y * 32) + tile_x);
+                int tmp_tile_index = mem.get_memory_byte(background_tile_map_start_address + (tile_y * 32) + tile_x);
 
                 // judge whether the number is unsigned
                 int tile_index = tmp_tile_index;
 
-                if (!background_tile_data_ADDRESS_flag)
+                if (!background_tile_data_address_flag)
                 {
                     // switch signed tile #
                     tile_index = (int8_t)tmp_tile_index;
                 }
 
                 // get tile data
-                tile_data_bytes_line_one = mem.get_memory_byte(background_tile_data_ADDRESS_start + (tile_index * 16) + (pixel_y * 2));
-                tile_data_bytes_line_two = mem.get_memory_byte(background_tile_data_ADDRESS_start + (tile_index * 16) + (pixel_y * 2) + 1);
+                tile_data_bytes_line_one = mem.get_memory_byte(background_tile_data_start_address + (tile_index * 16) + (pixel_y * 2));
+                tile_data_bytes_line_two = mem.get_memory_byte(background_tile_data_start_address + (tile_index * 16) + (pixel_y * 2) + 1);
                 last_tile_x = tile_x;
             }
 
@@ -361,299 +301,70 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
 
     if (OBJ_enable)
     {
+        uint8_t sprite_size = 8 * (get_binary_digit(LCDC, 2) + 1);
         for (int sprite_id = 39; sprite_id >= 0; sprite_id--)
         {
-
-            if (
-                oam_entry_table[sprite_id].y_position == 0 && oam_entry_table[sprite_id].x_position == 0)
+            if (oam_entry_table[sprite_id].y_position == 0 && oam_entry_table[sprite_id].x_position == 0)
+            {
                 continue;
+            }
 
-            int pixel_y = line_number_y - oam_entry_table[sprite_id].y_position + 16; //fit actually Y
-
+            int16_t sprite_y = oam_entry_table[sprite_id].y_position - 16;// y-coordinate offset: 0x10
+            int16_t sprite_x = oam_entry_table[sprite_id].x_position - 8;// x-coordinate offset: 0x08
+            uint16_t line = line_number_y - oam_entry_table[sprite_id].y_position + 16;
+            // if not in this line, dont render
+            if (line_number_y < sprite_y || line_number_y >= sprite_y + sprite_size)
+            {
+                continue;
+            }
+            if (sprite_x < -7 || sprite_x >= (SCREEN_WIDTH))
+            {
+                continue;
+            }
             bool flip_x = oam_entry_table[sprite_id].attributes_x_flip;
             bool flip_y = oam_entry_table[sprite_id].attributes_y_flip;
-            //bool priority = oam_entry_table[sprite_id].attributes_priority;
-
-            uint8_t sprite_tile_index = oam_entry_table[sprite_id].tile_index; //get tile No.
-            sprite_tile_index = oam_entry_table[sprite_id].tile_index | 0x01;
 
             // actual position is attr_y -8
-            pixel_y = pixel_y - 8;
+            line = line - 8;
 
             if (flip_y)
             {
                 // flip vertically
-                pixel_y = 8 - pixel_y - 1;
+                line = 8 - line - 1;
             }
 
-            uint8_t sprite_tile_line_one = mem.get_memory_byte(0x8000 + sprite_tile_index * 16 + pixel_y * 2);
-            uint8_t sprite_tile_line_two = mem.get_memory_byte(0x8000 + sprite_tile_index * 16 + pixel_y * 2 + 1);
+            uint16_t tile_location = 0x8000 + (oam_entry_table[sprite_id].tile_index | 0x01) * 16 + line * 2;
+
+            uint8_t sprite_tile_line_one = mem.get_memory_byte(tile_location);
+            uint8_t sprite_tile_line_two = mem.get_memory_byte(tile_location + 1);
 
             for (int x = 0; x < PIXELS_PER_TILELINE; x++)
             {
                 // if out of range, we dont need to render
-                if (oam_entry_table[sprite_id].x_position + x - 8 < 0)
+                if (sprite_x + x < 0 || sprite_x + x >= (SCREEN_WIDTH))
                 {
                     continue;
                 }
 
-                int pixel_x = PIXELS_PER_TILELINE - x % PIXELS_PER_TILELINE - 1;
+                int pixel_x_in_line = PIXELS_PER_TILELINE - x % PIXELS_PER_TILELINE - 1;
 
                 if (flip_x)
                 {
                     // flip horizontally
-                    pixel_x = PIXELS_PER_TILELINE - pixel_x - 1;
+                    pixel_x_in_line = PIXELS_PER_TILELINE - pixel_x_in_line - 1;
                 }
 
-                int color = mix_tile_colors(pixel_x, sprite_tile_line_one, sprite_tile_line_two);
+                int color = mix_tile_colors(pixel_x_in_line, sprite_tile_line_one, sprite_tile_line_two);
 
-                form.set_pixel_color(oam_entry_table[sprite_id].x_position + x - 8, line_number_y, color);
+                if (color == 0)
+                {
+                    continue;
+                }
+
+                form.set_pixel_color(sprite_x + x, line_number_y, color);
             }
         }
     }
-    // below is orginal PPU contents
-    /*
-    if (render_background)
-    {
-
-        // which address is currently under operation (reading) ?
-        uint16_t current_tile_ADDRESS = background_tile_data_ADDRESS_start;
-        uint16_t current_tile_map_ADDRESS = background_tile_map_ADDRESS_start;
-
-        // all together 32*32 tiles (20*8=SCREEN_WIDTH, 18*8=SCREEN_HEIGHT)
-        // given an id, we should find where is it
-        // for example tile #00 at 0x9800+0x00 occupys 8*8 pixels
-        // tile #35 at 0x9800+35 occupys 8*8 pixels, and it is begin at tile coordinate (1,3)
-        // which starts from pixel 1*8 on x-axis, 3*8 on y-axis
-        // X............................... 0~31
-        // ...X............................ 32~63
-        // ................................ 64~95
-        // blablabla
-        // ................................ 224~255
-        uint8_t background_pixel_y_start_position = 0;
-        uint8_t background_pixel_x_start_position = 0;
-        uint8_t background_tile_y_position = 0;
-        uint8_t background_tile_x_position = 0;
-
-        // read and render tile ranging 0~255
-
-        // where in tile map am i reding
-        uint16_t tile_map_seq = 0;
-
-        // get tile # from map
-        uint8_t tile_seq = 0;
-
-        // for each line in tile, there're buffers for two bytes
-        uint8_t tile_line_data_one = 0;
-        uint8_t tile_line_data_two = 0;
-
-        // for each line in tile, there's a buffer for us to put the mix result
-        uint8_t tile_line_data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-        for (tile_map_seq = 0; tile_map_seq <= 255; tile_map_seq++)
-        {
-            // calcuates which address in the background map should we read from
-            current_tile_map_ADDRESS = background_tile_map_ADDRESS_start + tile_map_seq;
-
-            // read entry
-            tile_seq = mem.get_memory_byte(current_tile_map_ADDRESS);
-
-            // calcuates which tile address should we read from according to the tile_seq
-            current_tile_ADDRESS = background_tile_map_ADDRESS_start + tile_seq * 0x10;
-
-            // read and put the data into background buffer
-            uint8_t current_line_in_tile = 0;
-
-            for (current_line_in_tile = 0; current_line_in_tile < 8; current_line_in_tile++)
-            {
-                // read line data
-                tile_line_data_one = mem.get_memory_byte(current_tile_ADDRESS + current_line_in_tile * 2);
-                tile_line_data_two = mem.get_memory_byte(current_tile_ADDRESS + current_line_in_tile * 2 + 1);
-
-                // mix
-                for (int i = 0; i < PIXELS_PER_TILELINE; i++)
-                {
-                    tile_line_data[i] = mix_tile_digit(tile_line_data_one, tile_line_data_two, i);
-                }
-
-                // read each line and put 8 pixels into background buffer
-                // but we first have to find out where are we?
-                background_tile_x_position = tile_seq % 32;
-                background_tile_y_position = (tile_seq - tile_seq % 32) / 32;
-                background_pixel_y_start_position = 8 * background_tile_y_position + current_line_in_tile;
-                background_pixel_x_start_position = 8 * background_tile_x_position;
-
-                // put from high digits to low digits
-                // digits:7 6 5 4 3 2 1 0
-                // data:  1 1 1 1 1 1 3 1
-                // pixels:0 1 2 3 4 5 6 7
-                for (int i = 0; i < PIXELS_PER_TILELINE; i++)
-                {
-                    background_buffer[background_pixel_y_start_position][background_pixel_x_start_position + i] = tile_line_data[7 - i];
-                }
-            }
-        }
-    }
-    // SCY: how much pixels should we put the output down
-    // SCX: how much pixels should we move the output to the right
-    // Now we put the scrolled background into buffer
-    for (int i = 0; i < SCREEN_HEIGHT; i++)
-    {
-        for (int j = 0; j < SCREEN_WIDTH; j++)
-        {
-            background_buffer_cut[j][i] = background_buffer[j + SCX][i + SCY];
-        }
-    }
-
-    // make a copy of background for the priorities of sprites to the background
-    for (int i = 0; i < SCREEN_HEIGHT; i++)
-    {
-        for (int j = 0; j < SCREEN_WIDTH; j++)
-        {
-            background_buffer_screen[j][i] = background_buffer_cut[j][i];
-        }
-    }
-
-    // judge bit 5 in LCDC (Windows Enable)
-    bool Windows_enable = get_binary_digit(LCDC, 5);
-
-    if (Windows_enable)
-    {
-        // now we draw windows
-
-        // TODO: figure out how windows are drawn and write this
-    }
-
-    // judge bit 1 in LCDC (OBJ Enable)
-    bool OBJ_enable = get_binary_digit(LCDC, 1);
-
-    if (OBJ_enable)
-    {
-        // now we will render sprites
-
-        uint8_t sprite_line_data_one = 0;
-        uint8_t sprite_line_data_two = 0;
-
-        int16_t sprite_id = 0;
-
-        // sprite tile data start from 0x8000, end at 0x8FFF, 4096 bytes, 16 bytes per tile
-        const uint16_t sprite_tile_start_ADDRESS = 0x8000;
-        uint16_t current_sprite_tile_ADDRESS = 0;
-
-        // for each sprite
-        // I treat all sprites as 8*8, regardless of OBJ Size.
-        // TODO: fix it!
-        uint8_t sprite_tile_line_data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-        uint8_t sprite_tile_line_data_temp[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-        uint8_t sprite_data[8][8];
-
-        // for priority, draw 39 first, 0 last
-        for (sprite_id = 39; sprite_id >= 0; sprite_id--)
-        {
-            // as we have the OAM entry
-            // first, if y_position==0 and x_position==0
-            // we dont need to draw.
-            if (oam_entry_table[sprite_id].y_position == 0 && oam_entry_table[sprite_id].x_position == 0)
-                continue;
-
-            // we read tile ID and cacluate the address
-            current_sprite_tile_ADDRESS = sprite_tile_start_ADDRESS + oam_entry_table[sprite_id].tile_index * 0x10;
-
-            uint8_t current_line_in_sprite = 0;
-
-            for (current_line_in_sprite = 0; current_line_in_sprite < 8; current_line_in_sprite++)
-            {
-                // read line data
-                sprite_line_data_one = mem.get_memory_byte(current_sprite_tile_ADDRESS + current_line_in_sprite * 2);
-                sprite_line_data_two = mem.get_memory_byte(current_sprite_tile_ADDRESS + current_line_in_sprite * 2 + 1);
-
-                // mix
-                for (int i = 0; i < 8; i++)
-                {
-                    sprite_tile_line_data[i] = mix_tile_digit(sprite_line_data_one, sprite_line_data_two, i);
-                }
-
-                // read each line and put 8 pixels into scrolled background buffer
-
-                // flip x: horizontally
-                if (oam_entry_table[sprite_id].attributes_x_flip)
-                {
-                    for (int i = 0; i < 8; i++)
-                    {
-                        sprite_tile_line_data_temp[i] = sprite_tile_line_data[7 - i];
-                        sprite_tile_line_data[i] = sprite_tile_line_data_temp[i];
-                    }
-                }
-                for (int i = 0; i < 8; i++)
-                {
-                    sprite_data[current_line_in_sprite][i] = sprite_tile_line_data[i];
-                }
-            }
-
-            // flip y: vertically
-            if (oam_entry_table[sprite_id].attributes_y_flip)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    for (int j = 0; j < 8; j++)
-                    {
-                        sprite_tile_line_data_temp[j] = sprite_data[i][j];
-                    }
-                    for (int j = 0; j < 8; j++)
-                    {
-                        sprite_data[7 - i][j] = sprite_data[i][j];
-                    }
-                    for (int j = 0; j < 8; j++)
-                    {
-                        sprite_data[i][j] = sprite_tile_line_data_temp[j];
-                    }
-                }
-            }
-
-            // render this sprite to scrolled screen buffer
-
-            // where should i start drawing this sprite?
-            uint8_t sprite_pixel_position_x = 0;
-            uint8_t sprite_pixel_position_y = 0;
-
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    sprite_pixel_position_x = oam_entry_table[sprite_id].x_position - 0x08;
-                    sprite_pixel_position_y = oam_entry_table[sprite_id].y_position - 0x10;
-                    if (is_out_of_bound(sprite_pixel_position_x, sprite_pixel_position_y))
-                    {
-                        continue;
-                    }
-
-                    // transparency for sprite
-                    if (sprite_data[i][j] == 0)
-                        continue;
-
-                    // priority
-                    if (oam_entry_table[sprite_id].attributes_priority)
-                    {
-                        // draw under background
-                        if (background_buffer_screen[sprite_pixel_position_y][sprite_pixel_position_x] != 3)
-                        {
-                            background_buffer_cut[sprite_pixel_position_y][sprite_pixel_position_x] = sprite_data[i][j];
-                        }
-                    }
-                    else
-                    {
-                        background_buffer_cut[sprite_pixel_position_y][sprite_pixel_position_x] = sprite_data[i][j];
-                    }
-                }
-            }
-        }
-    }
-    // send the line into form.screen_buffer
-    for (int width = 0; width <= SCREEN_WIDTH; width++)
-    {
-        form.set_pixel_color(width, line_number_y, background_buffer_cut[line_number_y][width]);
-    }
-    */
 }
 
 void Ppu::update_lyc(Memory &mem)
@@ -689,3 +400,7 @@ void Ppu::reset_interrupt_registers(Memory &mem)
     mem.set_memory_byte(IF_ADDRESS, IF);
 }
 
+uint8_t Ppu::mix_tile_colors(int bit, uint8_t tile_data_bytes_line_one, uint8_t tile_data_bytes_line_two)
+{
+    return (((tile_data_bytes_line_one >> bit) & 1) << 1) | ((tile_data_bytes_line_two >> bit) & 1);
+}
