@@ -254,3 +254,6 @@ test/oam_bug/source/linkfile
 test/oam_bug/source/readme.txt
 test/oam_bug/source/shell.inc
 src/memory.h
+src/cpu.h
+src/memory.cc
+src/memory.h
