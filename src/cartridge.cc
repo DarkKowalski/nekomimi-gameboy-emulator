@@ -62,6 +62,8 @@ void Cartridge::check_cartridge_headers(void)
     }
 }
 
+// DEPRECATED
+/*
 void Cartridge::load_rom_to_ram(Memory &mem)
 {
     uint16_t address;
@@ -70,6 +72,7 @@ void Cartridge::load_rom_to_ram(Memory &mem)
         mem.set_memory_byte(address, rom_bytes[address]);
     }
 }
+*/
 
 void Cartridge::switch_banks(uint8_t bank_number)
 {
@@ -174,6 +177,8 @@ void Cartridge::get_rom_name(void)
     printf("ROM name: %s\n", Cartridge::rom_name);
 }
 
+// DEPRECATED
+/*
 void Cartridge::init_memory(Memory &mem)
 {
     // init register
@@ -187,43 +192,13 @@ void Cartridge::init_memory(Memory &mem)
     //reg.set_register_word(RegisterName::r_sp, 0xFFFE);
 
     // init memory
-    mem.set_memory_byte(0xFF05, 0x00);
-    mem.set_memory_byte(0xFF06, 0x00);
-    mem.set_memory_byte(0xFF07, 0x00);
-    mem.set_memory_byte(0xFF10, 0x80);
-    mem.set_memory_byte(0xFF11, 0xBF);
-    mem.set_memory_byte(0xFF12, 0xF3);
-    mem.set_memory_byte(0xFF14, 0xBF);
-    mem.set_memory_byte(0xFF16, 0x3F);
-    mem.set_memory_byte(0xFF17, 0x00);
-    mem.set_memory_byte(0xFF19, 0xBF);
-    mem.set_memory_byte(0xFF1A, 0x7F);
-    mem.set_memory_byte(0xFF1B, 0xFF);
-    mem.set_memory_byte(0xFF1C, 0x9F);
-    mem.set_memory_byte(0xFF1E, 0xBF);
-    mem.set_memory_byte(0xFF20, 0xFF);
-    mem.set_memory_byte(0xFF21, 0x00);
-    mem.set_memory_byte(0xFF22, 0x00);
-    mem.set_memory_byte(0xFF23, 0xBF);
-    mem.set_memory_byte(0xFF24, 0x77);
-    mem.set_memory_byte(0xFF25, 0xF3);
-    mem.set_memory_byte(0xFF26, 0xF1);
-    mem.set_memory_byte(0xFF40, 0x91);
-    mem.set_memory_byte(0xFF42, 0x00);
-    mem.set_memory_byte(0xFF43, 0x00);
-    mem.set_memory_byte(0xFF45, 0x00);
-    mem.set_memory_byte(0xFF47, 0xFC);
-    mem.set_memory_byte(0xFF48, 0xFF);
-    mem.set_memory_byte(0xFF49, 0xFF);
-    mem.set_memory_byte(0xFF4A, 0x00);
-    mem.set_memory_byte(0xFF4B, 0x00);
-    mem.set_memory_byte(0xFFFF, 0x00);
 }
+*/
 
-void Cartridge::power_on(std::string arg_rom_file, Memory &mem)
+void Cartridge::power_on(std::string arg_rom_file)
 {
     // init RAM
-    Cartridge::init_memory(mem);
+    //Cartridge::init_memory(mem);
 
     // cartridge load
     Cartridge::load_rom_to_buffer(arg_rom_file);
@@ -235,7 +210,8 @@ void Cartridge::power_on(std::string arg_rom_file, Memory &mem)
     Cartridge::get_rom_name();
 
     // load desired rom data to RAM
-    Cartridge::load_rom_to_ram(mem);
+
+    //Cartridge::load_rom_to_ram(mem);
 }
 
 uint8_t Cartridge::get_cartridge_byte(uint16_t address)
@@ -263,25 +239,26 @@ void Cartridge::set_cartridge_byte(uint16_t address, uint8_t byte)
         if (address >= MBC1_MAGIC_NUMBER_START_ADDRESS && address <= MBC1_MAGIC_NUMBER_END_ADDRESS)
         {
             uint8_t switch_target = 0x00;
+
             for (uint8_t digit = 0; digit < 5; digit++)
             {
                 switch_target = switch_target + get_binary_digit(byte, digit) * (pow(2, digit));
             }
+
             printf("Switching bank to %d\n", switch_target);
             Cartridge::switch_banks(switch_target);
             return;
         }
-        printf("ROM is Trying to set address %d with byte %d\n, MBC1", address, byte);
+        printf("ROM is Trying to set address %d to byte %d, MBC1\n", address, byte);
         return;
     }
-    printf("ROM is Trying to set address %d with byte %d\n, ROM ONLY", address, byte);
+    printf("ROM is Trying to set address %d to byte %d, ROM ONLY\n", address, byte);
 }
 
 uint16_t Cartridge::get_cartridge_word(uint16_t address)
 {
     uint16_t byte_low = 0x0000;
     uint16_t byte_high = 0x0000;
-    return (byte_low | byte_high);
 
     if (Cartridge::using_MBC1)
     {
@@ -298,7 +275,7 @@ uint16_t Cartridge::get_cartridge_word(uint16_t address)
         // 0x8000=0x4000+(2-1)*0x4000
         byte_low = (Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE] & 0xffff);
         byte_high = ((Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE + 1] << 8) & 0xffff);
-        return Cartridge::rom_bytes[address + (Cartridge::mbc1_current_bank - 1) * BANK_SIZE];
+        return (byte_low | byte_high);
     }
 
     byte_low = (Cartridge::rom_bytes[address] & 0xffff);
@@ -310,5 +287,5 @@ uint16_t Cartridge::get_cartridge_word(uint16_t address)
 void Cartridge::set_cartridge_word(uint16_t address, uint16_t word)
 {
     // do nothing except print error
-    printf("ROM is Trying to set address %d with word %d\n", address, word);
+    printf("ROM is Trying to set address %d to word %d\n", address, word);
 }

@@ -3,8 +3,7 @@
 
 #include <cstdint>
 #include <string>
-#include "memory.h"
-#include "register.h"
+
 #include "miscellaneous.h"
 #include <math.h>
 
@@ -55,7 +54,7 @@ public:
 
     // load rom to ram
     // support ROM only and MBC1
-    void load_rom_to_ram(Memory &mem);
+    void load_rom_to_ram(void);
 
     // 0000-3FFF - ROM Bank 00 (Read Only)
     // This area always contains the first 16KBytes of the cartridge ROM.
@@ -123,10 +122,11 @@ public:
     // [$FF4A] = $00   ; WY
     // [$FF4B] = $00   ; WX
     // [$FFFF] = $00   ; IE
-    void init_memory(Memory &mem);
+    // DEPRECATED
+    //void init_memory(gameboy::Memory &mem);
 
     // cartridge power on modi
-    void power_on(std::string arg_rom_file, Memory &mem);
+    void power_on(std::string arg_rom_file);
 
     // cartridge get and set byte
     uint8_t get_cartridge_byte(uint16_t address);
