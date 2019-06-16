@@ -103,7 +103,7 @@ void Cartridge::get_rom_name(void)
         Cartridge::rom_name[i] = Cartridge::rom_bytes[0x0134 + i];
         finish = i;
     }
-    Cartridge::rom_name[finish+1] = '\0';
+    Cartridge::rom_name[finish + 1] = '\0';
     printf("ROM name: %s\n", Cartridge::rom_name);
     ppu_optimizaion();
 }
@@ -149,9 +149,9 @@ void Cartridge::ppu_optimizaion(void)
     {
         auto_optimization = 16;
     }
-    #ifdef DEBUG
+#ifdef DEBUG
     printf("ppu optimization set to %dx\n", auto_optimization);
-    #endif // DEBUG
+#endif // DEBUG
 }
 
 uint8_t Cartridge::get_cartridge_byte(uint16_t address)
@@ -178,26 +178,22 @@ void Cartridge::set_cartridge_byte(uint16_t address, uint8_t byte)
     {
         if (address >= MBC1_MAGIC_NUMBER_START_ADDRESS && address <= MBC1_MAGIC_NUMBER_END_ADDRESS)
         {
-            uint8_t switch_target = 0x00;
+            uint8_t switch_target = byte & 0x1F;
 
-            for (uint8_t digit = 0; digit < 5; digit++)
-            {
-                switch_target = switch_target + get_binary_digit(byte, digit) * (pow(2, digit));
-            }
-            #ifdef DEBUG
+#ifdef DEBUG
             printf("Switching bank to %d\n", switch_target);
-            #endif
+#endif
             Cartridge::switch_banks(switch_target);
             return;
         }
-        #ifdef DEBUG
+#ifdef DEBUG
         printf("ROM is Trying to set address %d to byte %d, MBC1\n", address, byte);
-        #endif
+#endif
         return;
     }
-    #ifdef DEBUG
+#ifdef DEBUG
     printf("ROM is Trying to set address %d to byte %d, ROM ONLY\n", address, byte);
-    #endif
+#endif
 }
 
 uint16_t Cartridge::get_cartridge_word(uint16_t address)
@@ -231,8 +227,8 @@ uint16_t Cartridge::get_cartridge_word(uint16_t address)
 
 void Cartridge::set_cartridge_word(uint16_t address, uint16_t word)
 {
-    // do nothing except print error
-    #ifdef DEBUG
+// do nothing except print error
+#ifdef DEBUG
     printf("ROM is Trying to set address %d to word %d\n", address, word);
-    #endif
+#endif
 }
