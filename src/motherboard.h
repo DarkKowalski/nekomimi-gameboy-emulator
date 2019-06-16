@@ -13,6 +13,7 @@
 #include "emulator-form.h"
 #include <chrono>
 #include <thread>
+#include <cstdlib>
 
 namespace gameboy
 {
@@ -25,14 +26,17 @@ public:
     gameboy::Emulatorform form;
     gameboy::Ppu ppu;
     gameboy::Joypad the_joypad;
-    //gameboy::Cartridge cartridge;
     gameboy::Timer timer;
 
     // power on sequence
     bool power_on(int argc, char *argv[]);
 
-    // work loop
-    void loop(void);
+    // major workload
+    bool workload();
+
+    void loop();
+
+    bool frame_rate_control();
 };
 } // namespace gameboy
 #endif

@@ -1,12 +1,12 @@
 #include "motherboard.h"
 
-using gameboy::Motherboard;
+using gameboy::Cartridge;
 using gameboy::Cpu;
-using gameboy::Register;
-using gameboy::RegisterName;
 using gameboy::FlagName;
 using gameboy::Memory;
-using gameboy::Cartridge;
+using gameboy::Motherboard;
+using gameboy::Register;
+using gameboy::RegisterName;
 
 using std::cout;
 using std::endl;
@@ -14,9 +14,10 @@ using std::hex;
 
 using std::this_thread::sleep_for;
 
+using std::milli;
+using std::chrono::duration;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
-using std::chrono::duration;
 
 void debug_flag_out(Cpu &cpu)
 {
@@ -62,16 +63,16 @@ bool Motherboard::power_on(int argc, char *argv[])
 {
     cpu.power_on();
 
-    std::string rom_file;
+    std::string rom_file_path;
 
     if (argc > 1) //get file by command
     {
-        rom_file = std::string(argv[1]);
+        rom_file_path = std::string(argv[1]);
     }
     else
     {
-        std::cout << "Please input ROM name" << std::endl;
-        std::cin >> rom_file;
+        std::cout << "Please input relative path of the ROM:" << std::endl;
+        std::cin >> rom_file_path;
     }
 
     // init RAM to 0x00
@@ -80,6 +81,12 @@ bool Motherboard::power_on(int argc, char *argv[])
     for (uint16_t address = 0x8000; address < 0xFFFF; address++)
     {
         mem.set_memory_byte(address, 0x00);
+    }
+
+    // cartridge power on, load file and check headers
+    if (!mem.cartridge.power_on(rom_file_path))
+    {
+        return false;
     }
 
     mem.set_memory_byte(0xFF05, 0x00);
@@ -114,12 +121,6 @@ bool Motherboard::power_on(int argc, char *argv[])
     mem.set_memory_byte(0xFF4B, 0x00);
     mem.set_memory_byte(0xFFFF, 0x00);
 
-    // cartridge power on, load file and check headers
-    if (!mem.cartridge.power_on(rom_file))
-    {
-        return false;
-    }
-
     // create a white window
     // r:255
     // g:255
@@ -133,26 +134,52 @@ void Motherboard::loop(void)
 {
     while (true)
     {
-        if (form.get_joypad_input(the_joypad, mem)) //get KEYS
+        bool keep_running = frame_rate_control();
+        if (!keep_running)
         {
-            auto start_time = high_resolution_clock::now();
-
-            uint8_t cpu_cycle = cpu.next(mem);
-            ppu.ppu_main(mem.cartridge.auto_optimization * cpu_cycle, mem, form);
-            timer.add_time(4 * cpu_cycle, mem);
-            //debug_out(0x00, 0x00, timing, cpu);
-
-            auto end_time = high_resolution_clock::now();
-
-            duration<double> fired_milliseconds = end_time - start_time;
-            duration<double> sleep_milliseconds = milliseconds(cpu_cycle * (20)) - fired_milliseconds;
-
-            //sleep_for(sleep_milliseconds);
-
-        }
-        else
-        {
-            break; //quit
+            break;
         }
     }
+}
+
+bool Motherboard::frame_rate_control()
+{
+    //auto start_time = high_resolution_clock::now();
+    //auto end_time = high_resolution_clock::now();
+
+    while (true)
+    {
+        // Maintain designated frequency of 50 Hz
+        // 20 ms per frame
+        /*
+        start_time = high_resolution_clock::now();
+        duration<double, std::milli> work_time = start_time - end_time;
+
+        if (work_time.count() < 20)
+        {
+            duration<double, std::milli> delta_ms(20 - work_time.count());
+            auto delta_ms_duration = std::chrono::duration_cast<milliseconds>(delta_ms);
+            sleep_for(milliseconds(delta_ms_duration.count()));
+        }
+
+        end_time = std::chrono::system_clock::now();
+        duration<double, std::milli> sleep_time = end_time - start_time;
+        */
+
+        bool workload_valid = workload();
+        return workload_valid;
+    }
+}
+
+bool Motherboard::workload()
+{
+    bool input_valid = form.get_joypad_input(the_joypad, mem);
+    if (input_valid)
+    {
+        uint8_t cpu_cycle = cpu.next(mem);
+        ppu.ppu_main(mem.cartridge.auto_optimization * cpu_cycle, mem, form);
+        timer.add_time(4 * cpu_cycle, mem);
+    }
+
+    return input_valid;
 }
