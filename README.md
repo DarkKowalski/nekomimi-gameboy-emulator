@@ -62,7 +62,7 @@ Thanks for [Blargg's Gameboy hardware test ROMs](https://github.com/retrio/gb-te
 
 ## Reference
 
-Thanks for all those nice guys share their techniacl knowledge and experience about hacking and emulating gameboy.
+Thanks for all those nice guys sharing their techniacl knowledge and experience about hacking and emulating gameboy.
 
 - [The Ultimate Game Boy Talk](https://youtu.be/HyzD8pNlpwI)
 - [Mohanson's gameboy](https://github.com/mohanson/gameboy)
