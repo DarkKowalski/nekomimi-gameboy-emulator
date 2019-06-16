@@ -4,5 +4,7 @@ cmake .
 echo "Start Making:"
 make
 echo "Clean Cache:"
-make clean && rm -rfv CMakeFiles
+make clean && \
+rm -rfv CMakeFiles && \
+rm -fv Makefile 
 echo "Done."
