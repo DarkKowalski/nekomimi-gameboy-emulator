@@ -1,26 +1,20 @@
 // Joypad
 // read input from SDL and excute the functions here.
-// FF00
 
 #ifndef GAMEBOY_JOYPAD_H
 #define GAMEBOY_JOYPAD_H
-
-//#include "marshmallow.h"
 #include <cstdint>
 #include <stdio.h>
 #include "memory.h"
-#include "miscellaneous.h"
 
 #define JOYPAD_ADDRESS 0xFF00
+#define IF_ADDRESS 0xFF0F
 
 namespace gameboy
 {
 class Joypad
 {
 public:
-    // handle inputs
-
-    // which column had the ROM selected
     uint8_t key_column = 0x00;
 
     bool column_direction = 0;
@@ -32,17 +26,10 @@ public:
     uint8_t keys_directions = 0x0F;
     // case CONTROL KEYS
     uint8_t keys_controls = 0x0F;
-
     // temp FF00
     uint8_t temp_ff00 = 0x00;
-
-    // handle intrrupts
     void joypad_interrupts(Memory &mem);
-
-    // write FF00 to memory
     void write_result(Memory &mem);
-
-    // reset Joypad
     void reset_joypad(void);
 };
 } // namespace gameboy

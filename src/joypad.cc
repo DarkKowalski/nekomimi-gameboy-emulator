@@ -12,7 +12,7 @@ void Joypad::joypad_interrupts(Memory &mem)
         (Joypad::key_column == 0x20 && Joypad::keys_directions != 0x0f))
     {
         // change bit 4 to 1 (Joypad)
-        current_interrupt = change_binary_digit(current_interrupt, 4, true);
+        current_interrupt |= 0x10;
 
         // write back to memory
         mem.set_memory_byte(IF_ADDRESS, current_interrupt);
