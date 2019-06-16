@@ -144,8 +144,6 @@ void Motherboard::loop(void)
 
 bool Motherboard::frame_rate_control()
 {
-    //auto start_time = high_resolution_clock::now();
-    //auto end_time = high_resolution_clock::now();
     bool workload_valid;
     while (true)
     {
