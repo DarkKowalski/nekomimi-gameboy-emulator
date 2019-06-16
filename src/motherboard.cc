@@ -144,31 +144,16 @@ void Motherboard::loop(void)
 
 bool Motherboard::frame_rate_control()
 {
-    //auto start_time = high_resolution_clock::now();
-    //auto end_time = high_resolution_clock::now();
-
+    bool workload_valid;
     while (true)
     {
-        // Maintain designated frequency of 50 Hz
-        // 20 ms per frame
-        /*
-        start_time = high_resolution_clock::now();
-        duration<double, std::milli> work_time = start_time - end_time;
-
-        if (work_time.count() < 20)
+        workload_valid = workload();
+        if (!workload_valid)
         {
-            duration<double, std::milli> delta_ms(20 - work_time.count());
-            auto delta_ms_duration = std::chrono::duration_cast<milliseconds>(delta_ms);
-            sleep_for(milliseconds(delta_ms_duration.count()));
+            break;
         }
-
-        end_time = std::chrono::system_clock::now();
-        duration<double, std::milli> sleep_time = end_time - start_time;
-        */
-
-        bool workload_valid = workload();
-        return workload_valid;
     }
+    return false;
 }
 
 bool Motherboard::workload()
