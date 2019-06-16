@@ -12,7 +12,7 @@ void Timer::add_time(uint8_t cycle, Memory &mem)
         reg_div++;
     }
 
-    if(get_binary_digit(reg_tac,2)==0) // timer enabled
+    if((reg_tac & 0x04)==0) // timer enabled
     {
         return;
     }
@@ -40,7 +40,7 @@ void Timer::add_time(uint8_t cycle, Memory &mem)
         {
             // request interrupt!
             uint8_t temp_interrupt_flag = mem.get_memory_byte(IF_ADDRESS);
-            temp_interrupt_flag = change_binary_digit(temp_interrupt_flag, 2, true);
+            temp_interrupt_flag |= 0x04;
             mem.set_memory_byte(IF_ADDRESS, temp_interrupt_flag);
 
             // rest tima to tma
