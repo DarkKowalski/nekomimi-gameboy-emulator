@@ -30,6 +30,11 @@ linux-kernel version  5.1.9
 cmake version         3.14.5
 gcc version           8.3.0
 ```
+
+## Run
+```bash
+./run.sh [rom-path/rom-name.gb]
+```
 ## Control
 
 ```
