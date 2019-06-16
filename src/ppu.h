@@ -4,9 +4,9 @@
 #include <cstdint>
 #include "memory.h"
 #include "emulator-form.h"
-#include "miscellaneous.h"
 
 #define PIXELS_PER_TILELINE 8
+#define IF_ADDRESS 0xFF0F
 
 namespace gameboy
 {
@@ -86,6 +86,7 @@ enum PpuMode {
 #define OBP1_ADDRESS 0xFF49
 #define WY_ADDRESS 0xFF4A
 #define WX_ADDRESS 0xFF4B
+#define OAM_TABLE_INITIAL_ADDDRESS 0xFE00
 
 class Ppu
 {
@@ -112,12 +113,6 @@ public:
     // there's VBlank
     void v_blank(Memory &mem);
 
-    // in OAM and VRAM, in fact program has nothing to do
-    // in Hblank, program read each line's data and put them into screen buffer
-    // in Vblank, program fresh the screen and update screen buffer
-    // ↑ Maybe?
-    // Not my thoughts
-
     // set mode
     void set_mode(PpuMode mode, Memory &mem);
 
@@ -129,7 +124,7 @@ public:
 
     // Ppu Clock
     // Add AddClocks time to inner clocks
-    void add_time(int AddClocks);
+    void add_time(int add_clocks);
 
     // reset interrupt registers (IF)
     void reset_interrupt_registers(Memory &mem);
