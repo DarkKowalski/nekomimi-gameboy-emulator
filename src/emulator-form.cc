@@ -38,7 +38,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_d:
                 the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
-                printf("You pressed D (RIGHT)\n");
                 the_joypad.keys_directions &= 0xE;
                 break;
 
@@ -46,7 +45,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_a:
                 the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
-                printf("You pressed A (LEFT)\n");
                 the_joypad.keys_directions &= 0xD;
                 break;
 
@@ -54,7 +52,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_w:
                 the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
-                printf("You pressed W (UP)\n");
                 the_joypad.keys_directions &= 0xB;
                 break;
 
@@ -62,7 +59,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_s:
                 the_joypad.key_column = 0x20;
                 the_joypad.column_direction = 1;
-                printf("You pressed S (DOWN)\n");
                 the_joypad.keys_directions &= 0x7;
                 break;
 
@@ -71,7 +67,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_j:
                 the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
-                printf("You pressed J (A)\n");
                 the_joypad.keys_controls &= 0xE;
                 break;
 
@@ -79,7 +74,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_k:
                 the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
-                printf("You pressed K (B)\n");
                 the_joypad.keys_controls &= 0xD;
                 break;
 
@@ -87,7 +81,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_t:
                 the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
-                printf("You pressed T (SELECT)\n");
                 the_joypad.keys_controls &= 0xB;
                 break;
 
@@ -95,7 +88,6 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             case SDLK_RETURN:
                 the_joypad.key_column = 0x10;
                 the_joypad.column_controls = 1;
-                printf("You pressed RETURN (START)\n");
                 the_joypad.keys_controls &= 0x7;
                 break;
             }

@@ -31,28 +31,16 @@ public:
             {255, 255, 255}  //Brightest (11)
             */
 
-        {255, 255, 255},       //Darkest (00)
-        {222, 182, 175},   //01
-        {104, 86, 83}, //10
-        {0, 0, 0}  //Brightest (11)
+            {255, 255, 255}, //Darkest (00)
+            {222, 182, 175}, //01
+            {104, 86, 83},   //10
+            {0, 0, 0}        //Brightest (11)
 
     };
-
-    // handle Joypad input in gpu loop
-    // if return value is false, which indicates that user input is ESC, and the emulator quit.
-    // if it's ture, just continue.
     bool get_joypad_input(Joypad &the_joypad, Memory &mem);
-
-    //set on-screen pixel to exactly which shade
     void set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color);
-
-    //flush buffer to screen
     void refresh_surface(void);
-
-    //create window, window width, window height, window title
     void create_window(uint8_t on_screen_window_width, uint8_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue);
-
-    //  destroy window and quit
     void destroy_window(void);
 
     SDL_Window *emulator_window;
