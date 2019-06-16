@@ -21,7 +21,7 @@ Actually, we **workaround** this.
 ./build.sh
 ```
 
-### Rlease Build Environment
+### Test Build Environment
 ```
 intel xeon 2680v2
 arch linux x64
@@ -44,13 +44,14 @@ gcc version           8.3.0
                 | |  `---------'  | |
                 | `---------------' |
                 |   _ GAME BOY      |
-    W           | _| |_         ,-. | ----> ?
-  A   D    <--- ||_ O _|   ,-. "._,"|
-    S           |  |_|    "._,"   A | ----> ?
-                |    _  _    B      |
+      W         | _| |_         ,-. | 
+    A   D  <--- ||_ O _|   ,-. "._,"|
+      S         |  |_|    "._,"  A  | ----> J
+                |    _  _   B       |       K
                 |   // //           |
-                |  // //    \\\\\\  | ----> ?/?
-                |  `  `      \\\\\\ ,
+                |   `  `    \\\\\\  | 
+                |  SELECT    \\\\\\ | ----> T  
+                |    START          |       Enter
                 |________...______,"
 ```
 ## Dev Doc
