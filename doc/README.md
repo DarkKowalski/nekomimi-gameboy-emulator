@@ -1,16 +1,15 @@
 # Nekomimi GameBoy Emulator Dev Doc
 
 ## Hardware
-| Real GameBoy                  | Emulator                |
-| :-----------                  | :-------                |
-| CPU: Sharp LR35902            | src/cpu & src/register  |
-| PPU (Picture Processing Unit) | src/gpu                 |
-| RAM & VRAM                    | src/memory & src/mmuint |
-| Joypad                        | src/joypad              |
-| Motherboard                   | src/motherboard         |
-| Serial                        | src/serial              |
-| Timer                         | src/timer               |
-| Cartridge                     | src/cartridge           |
+| Real GameBoy                  | Emulator                | Code Blame     |
+| :-----------                  | :-------                | :----------    |
+| CPU: Sharp LR35902            | src/cpu & src/register  | Kowalski Dark  |
+| PPU (Picture Processing Unit) | src/ppu                 | Marshmallow    |
+| RAM & VRAM                    | src/memory              | Kowalski Dark  |
+| Joypad                        | src/joypad              | Marshmallow    |
+| Motherboard                   | src/motherboard         | Marshmallow    |
+| Timer                         | src/timer               | Marshmallow    |
+| Cartridge                     | src/cartridge           | Marshmallow    |
 
 ## Naming
 | Namespace     | Prefix / Postfix        | Note                            |

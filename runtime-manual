@@ -1,0 +1,18 @@
+ ________   _______   ___  __    ________  _____ ______   ___  _____ ______   ___     
+|\   ___  \|\  ___ \ |\  \|\  \ |\   __  \|\   _ \  _   \|\  \|\   _ \  _   \|\  \    
+\ \  \\ \  \ \   __/|\ \  \/  /|\ \  \|\  \ \  \\\__\ \  \ \  \ \  \\\__\ \  \ \  \   
+ \ \  \\ \  \ \  \_|/_\ \   ___  \ \  \\\  \ \  \\|__| \  \ \  \ \  \\|__| \  \ \  \  
+  \ \  \\ \  \ \  \_|\ \ \  \\ \  \ \  \\\  \ \  \    \ \  \ \  \ \  \    \ \  \ \  \ 
+   \ \__\\ \__\ \_______\ \__\\ \__\ \_______\ \__\    \ \__\ \__\ \__\    \ \__\ \__\
+    \|__| \|__|\|_______|\|__| \|__|\|_______|\|__|     \|__|\|__|\|__|     \|__|\|__|
+                                                                                      
+Nekomimi Gameboy Emulator prototype, made with love by amateurs
+Help us make this better at https://github.com/DarkKowalski/nekomimi-gameboy-emulator
+
+Manual:
+Keyboard          Gameboy
+W\S       ---->   Up\Down 
+A\D       ---->   Right\Left
+J\K       ---->   A\B
+T         ---->   SELECT
+Enter     ---->   START
