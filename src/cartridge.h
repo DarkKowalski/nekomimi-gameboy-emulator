@@ -9,13 +9,15 @@
 
 // target is Super Mario Land (64 KB)
 #define ROM_SIZE 65536
+#define ZELDA_SIZE 524288
 #define CARTRIDGE_TYPE_ADDRESS 0x0147
 #define ROM_SIZE_ADDRESS 0x0148
+#define RAM_SIZE_ADDRESS 0x0149
 #define BANK_SIZE 0x4000
 
 #define MBC1_MAGIC_NUMBER_START_ADDRESS 0x1FFF
 #define MBC1_MAGIC_NUMBER_END_ADDRESS 0x4000
-//#define RAM_SIZE_ADDRESS 0x0149
+
 
 namespace gameboy
 {
@@ -25,12 +27,15 @@ class Cartridge
 public:
     bool using_ROM_only = false;
     bool using_MBC1 = false;
+    bool using_MBC1_RAM = false;
     bool not_supported_cartridge_mode = true;
 
     uint8_t mbc1_current_bank = 1;
     uint16_t mbc1_trigger_address = 0;
     uint8_t rom_attributes_bank_count = 0;
-    uint8_t rom_bytes[393216] = {0};
+    uint8_t ram_attributes_bank_count = 0;
+    uint8_t ram_attributes_bank_size = 0;// in kb
+    uint8_t rom_bytes[524288] = {0};
     char rom_name[15];
     uint8_t auto_optimization = 1;
 

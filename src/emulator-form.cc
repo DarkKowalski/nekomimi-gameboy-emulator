@@ -2,7 +2,7 @@
 
 using namespace gameboy;
 
-bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
+bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
 {
 
     // W-Up
@@ -16,9 +16,9 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
 
     while (SDL_PollEvent(&(Emulatorform::joypad_event)))
     {
-        the_joypad.temp_ff00 = mem.get_memory_byte(0xFF00);
-        the_joypad.temp_ff00 &= 0x30;
-        mem.set_memory_byte(0xFF00, the_joypad.temp_ff00);
+        joypad.temp_ff00 = mem.get_memory_byte(0xFF00);
+        joypad.temp_ff00 &= 0x30;
+        mem.set_memory_byte(0xFF00, joypad.temp_ff00);
 
         if (joypad_event.type == SDL_QUIT)
             return false;
@@ -36,62 +36,62 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             // for column 1 (Directions)
             // hit RIGHT
             case SDLK_d:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions &= 0xE;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions &= 0xE;
                 break;
 
             // hit LEFT
             case SDLK_a:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions &= 0xD;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions &= 0xD;
                 break;
 
             // hit UP
             case SDLK_w:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions &= 0xB;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions &= 0xB;
                 break;
 
             // hit DOWN
             case SDLK_s:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions &= 0x7;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions &= 0x7;
                 break;
 
             // for column 0 (Controls)
             // hit A
             case SDLK_j:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls &= 0xE;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0xE;
                 break;
 
             // hit B
             case SDLK_k:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls &= 0xD;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0xD;
                 break;
 
             // hit SELECT
             case SDLK_t:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls &= 0xB;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0xB;
                 break;
 
             // hit START
             case SDLK_RETURN:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls &= 0x7;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0x7;
                 break;
             }
-            //the_joypad.joypad_interrupts(mem);
+            //joypad.joypad_interrupts(mem);
         }
 
         // when you release keys
@@ -102,82 +102,144 @@ bool Emulatorform::get_joypad_input(Joypad &the_joypad, Memory &mem)
             // for column 1 (Directions)
             // release RIGHT
             case SDLK_d:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions |= 0x1;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions |= 0x1;
                 break;
 
             // release LEFT
             case SDLK_a:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions |= 0x2;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions |= 0x2;
                 break;
 
             // release UP
             case SDLK_w:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions |= 0x4;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions |= 0x4;
                 break;
 
             // release DOWN
             case SDLK_s:
-                the_joypad.key_column = 0x20;
-                the_joypad.column_direction = 1;
-                the_joypad.keys_directions |= 0x8;
+                joypad.key_column = 0x20;
+                joypad.column_direction = 1;
+                joypad.keys_directions |= 0x8;
                 break;
 
             // for column 0 (Controls)
             // release A
             case SDLK_j:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls |= 0x1;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x1;
                 break;
 
             // release B
             case SDLK_k:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls |= 0x2;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x2;
                 break;
 
             // release SELECT
             case SDLK_t:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls |= 0x4;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x4;
                 break;
 
             /// release START
             case SDLK_RETURN:
-                the_joypad.key_column = 0x10;
-                the_joypad.column_controls = 1;
-                the_joypad.keys_controls |= 0x8;
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x8;
                 break;
             }
         }
+        else if( joypad_event.type == SDL_JOYAXISMOTION )
+        {
+            //Motion on controller 0
+            if( joypad_event.jaxis.which == 0 )
+            {
+                //X axis motion
+                if( joypad_event.jaxis.axis == 0 )
+                {
+                    //Left of dead zone
+                    if( joypad_event.jaxis.value < -JOYSTICK_DEAD_ZONE )
+                    {
+                        joypad.key_column = 0x20;
+                        joypad.column_direction = 1;
+                        joypad.keys_directions &= 0xD;
+                        break;
+                    }
+                    //Right of dead zone
+                    else if( joypad_event.jaxis.value > JOYSTICK_DEAD_ZONE )
+                    {
+                        joypad.key_column = 0x20;
+                        joypad.column_direction = 1;
+                        joypad.keys_directions &= 0xE;
+                        break;
+                    }
+                    else
+                    {
+
+                    }
+                }
+                //Y axis motion
+                else if( joypad_event.jaxis.axis == 1 )
+                {
+                    //Below of dead zone
+                    if( joypad_event.jaxis.value < -JOYSTICK_DEAD_ZONE )
+                    {
+                        joypad.key_column = 0x20;
+                        joypad.column_direction = 1;
+                        joypad.keys_directions &= 0x7;
+                        break;
+                    }
+                    //Above of dead zone
+                    else if( joypad_event.jaxis.value > JOYSTICK_DEAD_ZONE )
+                    {
+                        joypad.key_column = 0x20;
+                        joypad.column_direction = 1;
+                        joypad.keys_directions &= 0xB;
+                        break;
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+        }
     }
-    the_joypad.write_result(mem);
-    the_joypad.reset_joypad();
+    joypad.write_result(mem);
+    joypad.reset_joypad();
     return true;
 }
 
-void Emulatorform::refresh_surface(void)
+bool Emulatorform::refresh_surface(void)
 {
     SDL_UpdateWindowSurface(Emulatorform::emulator_window);
+    return false;
 }
 
-void Emulatorform::set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color)
+void Emulatorform::set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color, uint8_t scale)
 {
     SDL_UnlockSurface(Emulatorform::emulator_window_surface);
     auto format = Emulatorform::emulator_window_surface->format;
     uint32_t *pixels = (Uint32 *)Emulatorform::emulator_window_surface->pixels;
-    pixels[pos_y * SCREEN_WIDTH + pos_x] = SDL_MapRGB(format, Emulatorform::color_palatte[color][0], Emulatorform::color_palatte[color][1], Emulatorform::color_palatte[color][2]);
+    for (int scale_x = 0; scale_x < scale; scale_x++)
+    {
+        for (int scale_y = 0; scale_y < scale; scale_y++)
+        {
+            pixels[(pos_y * scale + scale_y) * (SCREEN_WIDTH * scale) + pos_x * scale + scale_x] = SDL_MapRGB(format, Emulatorform::color_palatte[color][0], Emulatorform::color_palatte[color][1], Emulatorform::color_palatte[color][2]);
+        }
+    }
 }
 
-void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue)
+void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue, uint8_t scale)
 {
     // just init video
     SDL_Init(SDL_INIT_VIDEO);
@@ -192,7 +254,7 @@ void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_scre
     printf("Physical device resolution is %d*%d\n", physical_device_res_width, physical_device_res_height);
 
     // now create window
-    Emulatorform::emulator_window = SDL_CreateWindow(on_screen_title.c_str(), physical_device_res_width / 2 - SCREEN_WIDTH / 2, physical_device_res_height / 2 - SCREEN_HEIGHT / 2, on_screen_window_width, on_screen_window_height, SDL_WINDOW_SHOWN);
+    Emulatorform::emulator_window = SDL_CreateWindow(on_screen_title.c_str(), physical_device_res_width / 2 - SCREEN_WIDTH * scale / 2, physical_device_res_height / 2 - SCREEN_HEIGHT * scale / 2, on_screen_window_width * scale, on_screen_window_height * scale, SDL_WINDOW_SHOWN);
 
     // get the surface
     Emulatorform::emulator_window_surface = SDL_GetWindowSurface(Emulatorform::emulator_window);
@@ -202,10 +264,27 @@ void Emulatorform::create_window(uint8_t on_screen_window_width, uint8_t on_scre
 
     //  update windows surface to show the color
     SDL_UpdateWindowSurface(Emulatorform::emulator_window);
+
+    if( SDL_NumJoysticks() < 1 )
+    {
+        printf( "Warning: No joysticks connected!\n" );
+    }
+    else
+    {
+        //Load joystick
+        game_controller = SDL_JoystickOpen( 0 );
+        if( game_controller == NULL )
+        {
+            printf( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
+        }
+    }
+
 }
 
 void Emulatorform::destroy_window(void)
 {
     SDL_FreeSurface(Emulatorform::emulator_window_surface);
+    SDL_JoystickClose( game_controller );
+    game_controller = NULL;
     SDL_Quit();
 }
