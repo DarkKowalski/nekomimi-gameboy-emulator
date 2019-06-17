@@ -4,7 +4,7 @@
 #ifndef GAMEBOY_JOYPAD_H
 #define GAMEBOY_JOYPAD_H
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 #include "memory.h"
 
 #define JOYPAD_ADDRESS 0xFF00
