@@ -3,7 +3,7 @@ cat ./runtime-manual
 echo ""
 if [ x$1 != x ]
 then
-./run-emulator "$1"
+./run-emulator "$@"
 else
 ./run-emulator
 fi
