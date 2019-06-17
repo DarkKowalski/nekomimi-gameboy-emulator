@@ -11,7 +11,7 @@ We have **no right** to put their logo picture into this emulator boot ROM.
 
 Actually, we **workaround** this.
 
-## Dependecy
+## Dependency
 - [GCC](https://gcc.gnu.org/) later than 7.4.0
 - [SDL 2.0](https://www.libsdl.org/)
 - [Cmake](https://cmake.org/) later than 3.10.2
