@@ -4,9 +4,8 @@ using gameboy::Emulatorform;
 using gameboy::Memory;
 using gameboy::Ppu;
 using gameboy::PpuMode;
-using gameboy::Sprite;
 
-void Ppu::ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form)
+void Ppu::ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form, uint8_t scale)
 {
     reset_interrupt_registers(mem);
     // sync with system cycles
@@ -44,14 +43,15 @@ void Ppu::ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form)
         {
             ppu_inner_clock = ppu_inner_clock - 205;
 
-            h_blank(mem, form);
+            h_blank(mem, form, scale);
 
             uint8_t ly_byte = mem.get_memory_byte(LY_ADDRESS);
             // if LY >= SCREEN_HEIGHT enter vblank in next loop, flush buffer to screen now
             if (ly_byte >= SCREEN_HEIGHT)
             {
                 set_mode(PpuMode::mode_vblank, mem);
-                form.refresh_surface();
+                //form.refresh_surface();
+                ready_to_refresh = true;
             }
 
             //if not, go on to next line
@@ -90,22 +90,7 @@ void Ppu::oam_search(Memory &mem)
     // 40 sprites
     // each sprite occupy 4 bytes
 
-    for (int sprite_id = 0; sprite_id < 40; sprite_id++)
-    {
-        uint16_t sprite_initial_address = OAM_TABLE_INITIAL_ADDDRESS + (sprite_id * 4);
 
-        Sprite &current = oam_entry_table[sprite_id];
-        current.y_position = mem.get_memory_byte(sprite_initial_address);
-        current.x_position = mem.get_memory_byte(sprite_initial_address + 1);
-        current.tile_index = mem.get_memory_byte(sprite_initial_address + 2);
-
-        // write 4 attributes
-        uint8_t temp_attritube = mem.get_memory_byte(sprite_initial_address + 3);
-        current.attributes_priority = temp_attritube & 0x80;
-        current.attributes_y_flip = temp_attritube & 0x40;
-        current.attributes_x_flip = temp_attritube & 0x20;
-        current.attributes_palette_number = temp_attritube & 0x10;
-    }
 }
 
 void Ppu::pixel_transfer(Memory &mem)
@@ -119,13 +104,13 @@ void Ppu::pixel_transfer(Memory &mem)
     }
 }
 
-void Ppu::h_blank(Memory &mem, Emulatorform &form)
+void Ppu::h_blank(Memory &mem, Emulatorform &form, uint8_t scale)
 {
     // get current line
     uint8_t ly_byte = mem.get_memory_byte(LY_ADDRESS);
 
     // draw current line
-    draw_line(ly_byte, mem, form);
+    draw_line(ly_byte, mem, form, scale);
 
     // write LY value into memory
     ly_byte++;
@@ -175,7 +160,7 @@ void Ppu::set_mode(PpuMode mode, Memory &mem)
     mem.set_memory_byte(STAT_ADDRESS, stat_byte);
 }
 
-void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
+void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint8_t scale)
 {
     if (line_number_y >= SCREEN_HEIGHT)
     {
@@ -289,7 +274,7 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
             int color = mix_tile_colors(pixel_x, tile_data_bytes_line_one, tile_data_bytes_line_two);
 
             // directly set color
-            form.set_pixel_color(i, line_number_y, color);
+            form.set_pixel_color(i, line_number_y, color, scale);
         }
     }
 
@@ -337,12 +322,12 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
             if (flip_y)
             {
                 // flip vertically
-                line = 8 - line - 1;
+                line = PIXELS_PER_TILELINE - line - 1;
             }
 
             uint16_t tile_location = 0x8000 + (tile_index + 1) * 16 + line * 2;
 #ifdef DEBUG
-            printf("Drawing Sprite #%d at location %d\n", oam_entry_table[sprite_id].tile_index, tile_location);
+            printf("Drawing Sprite #%d at memory adddress %d\n", oam_entry_table[sprite_id].tile_index, tile_location);
 #endif
             uint8_t sprite_tile_line_one = mem.get_memory_byte(tile_location);
             uint8_t sprite_tile_line_two = mem.get_memory_byte(tile_location + 1);
@@ -370,7 +355,7 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form)
                     continue;
                 }
 
-                form.set_pixel_color(sprite_x + x, line_number_y, color);
+                form.set_pixel_color(sprite_x + x, line_number_y, color, scale);
             }
         }
     }

@@ -3,19 +3,78 @@
 #include "motherboard.h"
 //#define DEBUG
 
-using namespace gameboy;
+using gameboy::Motherboard;
+using gameboy::Emulatorform;
+using gameboy::Joypad;
+
+
+using std::thread;
+using std::string;
+
+gameboy::Motherboard motherboard;
+gameboy::Emulatorform form;
+gameboy::Joypad joypad;
+
+
 
 int main(int argc, char *argv[])
 {
-    gameboy::Motherboard motherboard;
+    uint8_t scale = 1;
 
-    if (!motherboard.power_on(argc, argv))
+    switch (argc)
     {
-        return 0xFF;
+    case 1:
+    {
+        if (!motherboard.power_on(argc, argv))
+        {
+            return 0xFF;
+        }
+        scale = 1;
+        break;
     }
+    case 2:
+    {
+        if (!motherboard.power_on(argc, argv))
+        {
+            return 0xFF;
+        }
+        scale = 1;
+        break;
+    }
+    case 4:
+    {
+        std::string test = std::string(argv[1]);
+        if (test != "-s" && test != "-sf")
+        {
+            printf("Unsupported argument format!\n");
+            return 0xFE;
+        }
+        scale = (uint8_t) *argv[2] - 48;
+        if (scale >= 7 && test == "-s")
+        {
+            printf("Scaling too large!\n");
+            printf("Using -sf to override.\n");
+            return 0xDD;
+        }
+        if (!motherboard.power_on(argc, argv))
+        {
+            return 0xFF;
+        }
+        break;
+    }
+    default:
+    {
+        std::cout << "Unrecognized counts of arguments!" << std::endl;
+        std::cout << "Quiting..." << std::endl;
+    }
+    }
+    // create a white window
+    // r:255
+    // g:255
+    // b:255
+    form.create_window(SCREEN_WIDTH, SCREEN_HEIGHT, motherboard.mem.cartridge.rom_name, 255, 255, 255, scale);
 
-    //CPU Cycle
-    motherboard.loop();
+    motherboard.loop(form, joypad, scale);
 
 #ifdef DEBUG
     FILE *out_ram = fopen("out_ram.gbram", "w+b");
@@ -25,7 +84,6 @@ int main(int argc, char *argv[])
     out_ram = nullptr;
 #endif
     // quit
-    motherboard.form.destroy_window();
-
+    form.destroy_window();
     return 0;
 }

@@ -12,62 +12,9 @@ namespace gameboy
 {
 
 // Sprite
-class Sprite
+
+enum PpuMode
 {
-public:
-    Sprite()
-    {
-        y_position = 0;
-        x_position = 0;
-        tile_index = 0;
-
-        attributes_priority = false;
-        attributes_y_flip = false;
-        attributes_x_flip = false;
-        attributes_palette_number = 0;
-    }
-    // Byte 0
-    // Y Position
-    // Specifies the sprites vertical position on the screen (minus 16).
-    // An off-screen value (for example, Y=0 or Y>=160) hides the sprite.
-    // 0x10 will put it right on the top of the screen
-    uint8_t y_position;
-
-    // Byte 1
-    // X Position
-    // Specifies the sprites horizontal position on the screen (minus 8).
-    // An off-screen value (X=0 or X>=168) hides the sprite, but the sprite still affects the priority ordering.
-    // A better way to hide a sprite is to set its Y-coordinate off-screen.
-    // 0x08 will put it right on the left edge of the screen
-    uint8_t x_position;
-
-    // Byte 2
-    // Tile/Pattern Number
-    // Specifies the sprites Tile Number (00-FF). This (unsigned) value selects a tile from memory at 8000h-8FFFh.
-    // In CGB Mode this could be either in VRAM Bank 0 or 1, depending on Bit 3 of the following byte.
-    // In 8x16 mode, the lower bit of the tile number is ignored.
-    // IE: the upper 8x8 tile is "NN AND FEh", and the lower 8x8 tile is "NN OR 01h".
-    uint8_t tile_index;
-
-    // Byte3 - Attributes/Flags:
-    // Bit7   OBJ-to-BG Priority (0=OBJ Above BG, 1=OBJ Behind BG color 1-3)
-    //        (Used for both BG and Window. BG color 0 is always behind OBJ)
-    // Bit6   Y flip          (0=Normal, 1=Vertically mirrored)
-    // Bit5   X flip          (0=Normal, 1=Horizontally mirrored)
-    // Bit4   Palette number  **Non CGB Mode Only** (0=OBP0, 1=OBP1)
-    // Bit3   Tile VRAM-Bank  **CGB Mode Only**     (0=Bank 0, 1=Bank 1)
-    // Bit2-0 Palette number  **CGB Mode Only**     (OBP0-7)
-
-    // This is a GB, NOT CGB
-    // So there are only 4 flags (attributes)
-    bool attributes_priority;
-    bool attributes_y_flip;
-    bool attributes_x_flip;
-    uint8_t attributes_palette_number;
-
-};
-
-enum PpuMode {
     mode_oam_search = 0x02,
     mode_pixel_transfer = 0x03,
     mode_hblank = 0x00,
@@ -95,12 +42,12 @@ public:
     {
         current_mode = PpuMode::mode_hblank;
     }
-
-    Sprite oam_entry_table[40];
     PpuMode current_mode;
 
+    bool ready_to_refresh = false;
+
     // Main
-    void ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form);
+    void ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form, uint8_t scale);
 
     // for each line in first 144 lines
     // 20 clocks for OAMSearch
@@ -108,7 +55,7 @@ public:
     // 43 clocks for PixelTransfer (DMA)
     void pixel_transfer(Memory &mem);
     // 51 clock0s for HBlank
-    void h_blank(Memory &mem, Emulatorform &form);
+    void h_blank(Memory &mem, Emulatorform &form, uint8_t scale);
     // for last 10 lines * (20+43+51) clocks per line
     // there's VBlank
     void v_blank(Memory &mem);
@@ -117,7 +64,7 @@ public:
     void set_mode(PpuMode mode, Memory &mem);
 
     // draw line y
-    void draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form);
+    void draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint8_t scale);
 
     // update lyc
     void update_lyc(Memory &mem);
