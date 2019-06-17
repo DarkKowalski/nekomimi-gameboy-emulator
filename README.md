@@ -33,8 +33,15 @@ gcc version           8.3.0
 
 ## Run
 ```bash
-./run.sh [rom-path/rom-name.gb]
+./run.sh [-s ratio] romfile
 ```
+
+example:
+
+```bash
+./run.sh ./rom/meow.gb
+./run.sh -s 2 ./rom/meow.gb
+
 ## Control
 
 ```
