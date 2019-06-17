@@ -41,6 +41,7 @@ example:
 ```bash
 ./run.sh ./rom/meow.gb
 ./run.sh -s 2 ./rom/meow.gb
+```
 
 ## Control
 
