@@ -19,46 +19,6 @@ using std::chrono::duration;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
 
-void debug_flag_out(Cpu &cpu)
-{
-    cout << "f_z = " << static_cast<unsigned>(cpu.reg.get_flag(FlagName::f_z)) << endl;
-    cout << "f_n = " << static_cast<unsigned>(cpu.reg.get_flag(FlagName::f_n)) << endl;
-    cout << "f_h = " << static_cast<unsigned>(cpu.reg.get_flag(FlagName::f_h)) << endl;
-    cout << "f_c = " << static_cast<unsigned>(cpu.reg.get_flag(FlagName::f_c)) << endl;
-}
-
-void debug_out(uint8_t opcode_main, uint8_t opcode_cb, uint8_t cycle, Cpu &cpu)
-{
-    cout << "=============================================================================" << endl;
-
-    if (!opcode_cb)
-    {
-        cout << "Current Opcode: Main " << hex << static_cast<int>(opcode_main) << endl;
-    }
-    else
-    {
-        cout << "Current Opcode: Prefix CB " << hex << static_cast<int>(opcode_cb) << endl;
-    }
-
-    cout << "Current cycles: " << static_cast<int>(cycle) << endl;
-
-    cout << "Reg A:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_a)) << endl;
-    cout << "Reg F:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_f)) << endl;
-    cout << "Reg B:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_b)) << endl;
-    cout << "Reg C:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_c)) << endl;
-    cout << "Reg D:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_d)) << endl;
-    cout << "Reg E:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_e)) << endl;
-    cout << "Reg H:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_h)) << endl;
-    cout << "Reg L:" << hex << static_cast<int>(cpu.reg.get_register_byte(RegisterName::r_l)) << endl;
-
-    cout << "Reg SP:" << hex << static_cast<int>(cpu.reg.get_register_word(RegisterName::r_sp)) << endl;
-    cout << "Reg PC:" << hex << static_cast<int>(cpu.reg.get_register_word(RegisterName::r_pc)) << endl;
-
-    debug_flag_out(cpu);
-
-    cout << "=============================================================================" << endl;
-}
-
 bool Motherboard::power_on(int argc, char *argv[])
 {
     cpu.power_on();
