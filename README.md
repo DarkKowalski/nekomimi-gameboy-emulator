@@ -26,9 +26,10 @@ Actually, we **workaround** this.
 intel xeon 2680v2
 arch linux x64
 
-linux-kernel version  5.1.9
+linux-kernel version  5.1.11
 cmake version         3.14.5
-gcc version           8.3.0
+gcc version           9.1.0
+sdl2 version          2.0.9
 ```
 
 ## Run
