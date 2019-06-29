@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Gnerate Makefile:"
+echo "Generate Makefile:"
 cmake .
 echo "Start Making:"
 make
